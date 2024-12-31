@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
 import { Hero } from '../components/Hero';
+import { Navbar } from '../components/Navbar';
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-stone-50">
+      <Navbar />
       <Hero />
       
       <section className="py-20 px-4">
