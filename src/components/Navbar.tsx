@@ -9,7 +9,7 @@ export const Navbar = () => {
           to="/" 
           className="text-2xl font-bold text-white hover:text-white/80 transition-colors"
         >
-          Kiwi Gacha
+          New Zealection
         </Link>
         
         <div className="flex items-center gap-6">
