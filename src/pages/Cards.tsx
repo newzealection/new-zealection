@@ -30,6 +30,10 @@ const Cards = () => {
     try {
       setIsRolling(true);
       
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+      
       // Get a random card
       const { data: cards, error: cardsError } = await supabase
         .from('cards')
@@ -42,11 +46,10 @@ const Cards = () => {
       // Add card to user's collection
       const { error: insertError } = await supabase
         .from('user_cards')
-        .insert([
-          {
-            card_id: randomCard.id,
-          },
-        ]);
+        .insert({
+          card_id: randomCard.id,
+          user_id: user.id,
+        });
       
       if (insertError) throw insertError;
       

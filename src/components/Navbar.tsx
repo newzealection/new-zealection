@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Home, User, Cards, Collection } from "lucide-react";
+import { Home, User, GalleryHorizontalEnd, Library } from "lucide-react";
 
 export const Navbar = () => {
   return (
@@ -23,7 +23,7 @@ export const Navbar = () => {
               to="/cards"
               className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-gray-100 transition-colors"
             >
-              <Cards className="w-5 h-5" />
+              <GalleryHorizontalEnd className="w-5 h-5" />
               <span>Cards</span>
             </Link>
             
@@ -31,7 +31,7 @@ export const Navbar = () => {
               to="/collection"
               className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-gray-100 transition-colors"
             >
-              <Collection className="w-5 h-5" />
+              <Library className="w-5 h-5" />
               <span>Collection</span>
             </Link>
             
