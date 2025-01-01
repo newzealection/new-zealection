@@ -3,8 +3,14 @@ import { motion } from 'framer-motion';
 import { CollectibleCard } from '@/components/CollectibleCard';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from 'date-fns';
 
 const Collection = () => {
+  const [sortBy, setSortBy] = React.useState<'rarity' | 'location' | 'collected'>('rarity');
+  const [filterRarity, setFilterRarity] = React.useState<string>('all');
+  const [filterLocation, setFilterLocation] = React.useState<string>('all');
+
   const { data: userCards, isLoading } = useQuery({
     queryKey: ['userCards'],
     queryFn: async () => {
@@ -12,6 +18,7 @@ const Collection = () => {
         .from('user_cards')
         .select(`
           card_id,
+          collected_at,
           cards (
             id,
             title,
@@ -26,6 +33,43 @@ const Collection = () => {
     },
   });
 
+  const sortedAndFilteredCards = React.useMemo(() => {
+    if (!userCards) return [];
+
+    let filteredCards = userCards;
+
+    // Apply rarity filter
+    if (filterRarity !== 'all') {
+      filteredCards = filteredCards.filter(card => card.cards.rarity === filterRarity);
+    }
+
+    // Apply location filter
+    if (filterLocation !== 'all') {
+      filteredCards = filteredCards.filter(card => card.cards.location === filterLocation);
+    }
+
+    // Sort cards
+    return [...filteredCards].sort((a, b) => {
+      switch (sortBy) {
+        case 'rarity':
+          const rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 };
+          return rarityOrder[a.cards.rarity as keyof typeof rarityOrder] - 
+                 rarityOrder[b.cards.rarity as keyof typeof rarityOrder];
+        case 'location':
+          return a.cards.location.localeCompare(b.cards.location);
+        case 'collected':
+          return new Date(b.collected_at).getTime() - new Date(a.collected_at).getTime();
+        default:
+          return 0;
+      }
+    });
+  }, [userCards, sortBy, filterRarity, filterLocation]);
+
+  const locations = React.useMemo(() => {
+    if (!userCards) return new Set<string>();
+    return new Set(userCards.map(card => card.cards.location));
+  }, [userCards]);
+
   return (
     <div className="min-h-screen bg-stone-50">
       <Navbar />
@@ -37,24 +81,65 @@ const Collection = () => {
           className="max-w-7xl mx-auto"
         >
           <h1 className="text-4xl font-bold text-gray-900 mb-6">My Collection</h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Your collected New Zealand locations
-          </p>
+          
+          <div className="flex flex-wrap gap-4 mb-8">
+            <Select value={sortBy} onValueChange={(value: 'rarity' | 'location' | 'collected') => setSortBy(value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rarity">Sort by Rarity</SelectItem>
+                <SelectItem value="location">Sort by Location</SelectItem>
+                <SelectItem value="collected">Sort by Collection Date</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterRarity} onValueChange={setFilterRarity}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by rarity..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Rarities</SelectItem>
+                <SelectItem value="legendary">Legendary</SelectItem>
+                <SelectItem value="epic">Epic</SelectItem>
+                <SelectItem value="rare">Rare</SelectItem>
+                <SelectItem value="common">Common</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterLocation} onValueChange={setFilterLocation}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by location..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Locations</SelectItem>
+                {Array.from(locations).map(location => (
+                  <SelectItem key={location} value={location}>
+                    {location}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {isLoading ? (
             <div className="text-center">Loading your collection...</div>
-          ) : userCards?.length === 0 ? (
+          ) : sortedAndFilteredCards.length === 0 ? (
             <div className="text-center text-gray-600">
-              Your collection is empty. Visit the Cards page to roll for new cards!
+              {userCards?.length === 0 
+                ? "Your collection is empty. Visit the Cards page to roll for new cards!"
+                : "No cards match your current filters."}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userCards?.map((userCard: any) => (
+              {sortedAndFilteredCards.map((userCard: any) => (
                 <CollectibleCard
                   key={userCard.card_id}
                   imageUrl={userCard.cards.image_url}
                   title={userCard.cards.title}
                   location={userCard.cards.location}
+                  rarity={userCard.cards.rarity}
+                  collectedAt={format(new Date(userCard.collected_at), 'PPP')}
                 />
               ))}
             </div>
