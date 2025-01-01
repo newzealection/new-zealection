@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cards: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          location: string
+          rarity: Database["public"]["Enums"]["card_rarity"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          location: string
+          rarity?: Database["public"]["Enums"]["card_rarity"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          location?: string
+          rarity?: Database["public"]["Enums"]["card_rarity"]
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -30,6 +57,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_cards: {
+        Row: {
+          card_id: string
+          collected_at: string
+          id: string
+          last_roll_at: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          collected_at?: string
+          id?: string
+          last_roll_at?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          collected_at?: string
+          id?: string
+          last_roll_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cards_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -38,7 +97,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      card_rarity: "common" | "rare" | "epic" | "legendary"
     }
     CompositeTypes: {
       [_ in never]: never

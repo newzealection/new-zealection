@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Callback from "./pages/auth/Callback";
 import Account from "./pages/Account";
+import Cards from "./pages/Cards";
+import Collection from "./pages/Collection";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 
@@ -58,6 +60,22 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cards"
+            element={
+              <ProtectedRoute>
+                <Cards />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/collection"
+            element={
+              <ProtectedRoute>
+                <Collection />
               </ProtectedRoute>
             }
           />
