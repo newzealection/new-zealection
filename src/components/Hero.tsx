@@ -44,7 +44,7 @@ export const Hero = () => {
 
         <div className="flex gap-6 justify-center mt-12 overflow-x-auto pb-8">
           <CollectibleCard
-            imageUrl="https://images.unsplash.com/photo-1578862973944-aa3f689935d9"
+            imageUrl="https://unsplash.com/photos/field-of-trees-near-snow-covered-mountain-ROsR2V9-cdc"
             title="Mount Cook"
             location="Southern Alps"
             rarity="legendary"
