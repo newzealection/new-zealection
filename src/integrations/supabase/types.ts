@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       cards: {
         Row: {
+          card_code: string
           created_at: string
           id: string
           image_url: string
@@ -19,6 +20,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          card_code?: string
           created_at?: string
           id?: string
           image_url: string
@@ -27,6 +29,7 @@ export type Database = {
           title: string
         }
         Update: {
+          card_code?: string
           created_at?: string
           id?: string
           image_url?: string
@@ -63,6 +66,7 @@ export type Database = {
           collected_at: string
           id: string
           last_roll_at: string
+          unique_card_id: string
           user_id: string
         }
         Insert: {
@@ -70,6 +74,7 @@ export type Database = {
           collected_at?: string
           id?: string
           last_roll_at?: string
+          unique_card_id?: string
           user_id: string
         }
         Update: {
@@ -77,6 +82,7 @@ export type Database = {
           collected_at?: string
           id?: string
           last_roll_at?: string
+          unique_card_id?: string
           user_id?: string
         }
         Relationships: [
@@ -94,7 +100,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_unique_card_id: {
+        Args: {
+          card_code: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       card_rarity: "common" | "rare" | "epic" | "legendary"

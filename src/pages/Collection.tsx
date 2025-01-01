@@ -20,6 +20,7 @@ const Collection = () => {
         .select(`
           card_id,
           collected_at,
+          unique_card_id,
           cards (
             id,
             title,
@@ -141,6 +142,7 @@ const Collection = () => {
                   location={userCard.cards.location}
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
+                  uniqueCardId={userCard.unique_card_id}
                 />
               ))}
             </div>

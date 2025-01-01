@@ -7,9 +7,17 @@ interface CollectibleCardProps {
   location: string;
   rarity: string;
   collectedAt: string;
+  uniqueCardId?: string;
 }
 
-export const CollectibleCard = ({ imageUrl, title, location, rarity, collectedAt }: CollectibleCardProps) => {
+export const CollectibleCard = ({ 
+  imageUrl, 
+  title, 
+  location, 
+  rarity, 
+  collectedAt,
+  uniqueCardId 
+}: CollectibleCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const rarityColors = {
@@ -44,7 +52,14 @@ export const CollectibleCard = ({ imageUrl, title, location, rarity, collectedAt
           </span>
         </div>
         <h3 className="text-xl font-semibold text-white mb-1">{title}</h3>
-        <p className="text-sm text-gray-300">Collected on {collectedAt}</p>
+        {collectedAt !== 'Sample Card' && (
+          <>
+            <p className="text-sm text-gray-300 mb-1">Collected on {collectedAt}</p>
+            {uniqueCardId && (
+              <p className="text-xs text-gray-400">Card ID: {uniqueCardId}</p>
+            )}
+          </>
+        )}
       </div>
     </motion.div>
   );
