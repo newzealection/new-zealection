@@ -44,16 +44,22 @@ export const Hero = () => {
             imageUrl="https://images.unsplash.com/photo-1506744038136-46273834b3fb"
             title="Milford Sound"
             location="Fiordland"
+            rarity="legendary"
+            collectedAt="Sample Card"
           />
           <CollectibleCard
             imageUrl="https://images.unsplash.com/photo-1500375592092-40eb2168fd21"
             title="Cathedral Cove"
             location="Coromandel"
+            rarity="epic"
+            collectedAt="Sample Card"
           />
           <CollectibleCard
             imageUrl="https://images.unsplash.com/photo-1501854140801-50d01698950b"
             title="Mount Cook"
             location="Southern Alps"
+            rarity="rare"
+            collectedAt="Sample Card"
           />
         </div>
       </div>

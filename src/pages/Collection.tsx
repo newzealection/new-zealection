@@ -1,3 +1,4 @@
+import React, { useState, useMemo } from 'react';
 import { Navbar } from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { CollectibleCard } from '@/components/CollectibleCard';
@@ -7,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from 'date-fns';
 
 const Collection = () => {
-  const [sortBy, setSortBy] = React.useState<'rarity' | 'location' | 'collected'>('rarity');
-  const [filterRarity, setFilterRarity] = React.useState<string>('all');
-  const [filterLocation, setFilterLocation] = React.useState<string>('all');
+  const [sortBy, setSortBy] = useState<'rarity' | 'location' | 'collected'>('rarity');
+  const [filterRarity, setFilterRarity] = useState<string>('all');
+  const [filterLocation, setFilterLocation] = useState<string>('all');
 
   const { data: userCards, isLoading } = useQuery({
     queryKey: ['userCards'],
@@ -33,7 +34,7 @@ const Collection = () => {
     },
   });
 
-  const sortedAndFilteredCards = React.useMemo(() => {
+  const sortedAndFilteredCards = useMemo(() => {
     if (!userCards) return [];
 
     let filteredCards = userCards;
@@ -65,7 +66,7 @@ const Collection = () => {
     });
   }, [userCards, sortBy, filterRarity, filterLocation]);
 
-  const locations = React.useMemo(() => {
+  const locations = useMemo(() => {
     if (!userCards) return new Set<string>();
     return new Set(userCards.map(card => card.cards.location));
   }, [userCards]);
@@ -132,7 +133,7 @@ const Collection = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedAndFilteredCards.map((userCard: any) => (
+              {sortedAndFilteredCards.map((userCard) => (
                 <CollectibleCard
                   key={userCard.card_id}
                   imageUrl={userCard.cards.image_url}
