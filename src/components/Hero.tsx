@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { CollectibleCard } from './CollectibleCard';
+import { Link } from 'react-router-dom';
 
 export const Hero = () => {
   return (
@@ -30,34 +31,36 @@ export const Hero = () => {
             Experience New Zealand's breathtaking landscapes through our unique collectible cards.
             Each card is a gateway to adventure.
           </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 bg-nzgreen-500 text-white rounded-lg font-medium shadow-lg"
-          >
-            Start Your Collection
-          </motion.button>
+          <Link to="/cards">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 bg-nzgreen-500 text-white rounded-lg font-medium shadow-lg"
+            >
+              Start Your Collection
+            </motion.button>
+          </Link>
         </motion.div>
 
         <div className="flex gap-6 justify-center mt-12 overflow-x-auto pb-8">
           <CollectibleCard
-            imageUrl="https://images.unsplash.com/photo-1506744038136-46273834b3fb"
-            title="Milford Sound"
-            location="Fiordland"
+            imageUrl="https://images.unsplash.com/photo-1578862973944-aa3f689935d9"
+            title="Mount Cook"
+            location="Southern Alps"
             rarity="legendary"
             collectedAt="Sample Card"
           />
           <CollectibleCard
-            imageUrl="https://images.unsplash.com/photo-1500375592092-40eb2168fd21"
-            title="Cathedral Cove"
-            location="Coromandel"
+            imageUrl="https://images.unsplash.com/photo-1507699622108-4be3abd695ad"
+            title="Milford Sound"
+            location="Fiordland"
             rarity="epic"
             collectedAt="Sample Card"
           />
           <CollectibleCard
-            imageUrl="https://images.unsplash.com/photo-1501854140801-50d01698950b"
-            title="Mount Cook"
-            location="Southern Alps"
+            imageUrl="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6"
+            title="Cathedral Cove"
+            location="Coromandel"
             rarity="rare"
             collectedAt="Sample Card"
           />

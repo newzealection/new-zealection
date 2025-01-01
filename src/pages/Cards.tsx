@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Navbar } from '../components/Navbar';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { CollectibleCard } from '@/components/CollectibleCard';
+import { format, formatDistanceToNow } from 'date-fns';
 
 const Cards = () => {
   const { toast } = useToast();
   const [isRolling, setIsRolling] = useState(false);
+  const [countdown, setCountdown] = useState('');
 
-  const { data: lastRoll } = useQuery({
+  const { data: lastRoll, refetch: refetchLastRoll } = useQuery({
     queryKey: ['lastRoll'],
     queryFn: async () => {
       const { data: userCards, error } = await supabase
@@ -23,6 +26,50 @@ const Cards = () => {
       return userCards?.[0]?.last_roll_at;
     },
   });
+
+  const { data: recentCards } = useQuery({
+    queryKey: ['recentCards'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_cards')
+        .select(`
+          *,
+          cards (*)
+        `)
+        .order('collected_at', { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 10000, // Refetch every 10 seconds
+  });
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!lastRoll) {
+        setCountdown('Roll Now!');
+        return;
+      }
+
+      const nextRollTime = new Date(lastRoll).getTime() + 24 * 60 * 60 * 1000;
+      const now = new Date().getTime();
+      const timeLeft = nextRollTime - now;
+
+      if (timeLeft <= 0) {
+        setCountdown('Roll Now!');
+      } else {
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        setCountdown(`Roll in ${hours}h ${minutes}m ${seconds}s`);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [lastRoll]);
 
   const canRoll = !lastRoll || new Date(lastRoll).getTime() + 24 * 60 * 60 * 1000 < Date.now();
 
@@ -57,6 +104,8 @@ const Cards = () => {
         title: "Congratulations!",
         description: `You got ${randomCard.title} (${randomCard.rarity})!`,
       });
+
+      refetchLastRoll();
       
     } catch (error) {
       console.error('Error rolling card:', error);
@@ -80,9 +129,9 @@ const Cards = () => {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto text-center"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">Roll a Card</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-6">Explore New Zealand</h1>
           <p className="text-lg text-gray-600 mb-8">
-            Try your luck and discover beautiful locations across New Zealand!
+            Discover beautiful locations across New Zealand through our unique collectible cards.
             You can roll once every 24 hours.
           </p>
           
@@ -92,8 +141,24 @@ const Cards = () => {
             onClick={handleRoll}
             disabled={!canRoll || isRolling}
           >
-            {isRolling ? "Rolling..." : canRoll ? "Roll Now!" : "Come back in 24 hours"}
+            {isRolling ? "Rolling..." : countdown}
           </Button>
+
+          <div className="mt-16">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-8">Recently Collected Cards</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentCards?.map((userCard) => (
+                <CollectibleCard
+                  key={userCard.id}
+                  imageUrl={userCard.cards.image_url}
+                  title={userCard.cards.title}
+                  location={userCard.cards.location}
+                  rarity={userCard.cards.rarity}
+                  collectedAt={format(new Date(userCard.collected_at), 'PPP')}
+                />
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
