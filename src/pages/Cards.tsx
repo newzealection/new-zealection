@@ -6,62 +6,41 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { CollectibleCard } from '@/components/CollectibleCard';
-import { format } from 'date-fns';
-import { Database } from '@/integrations/supabase/types';
-
-type UserCard = Database['public']['Tables']['user_cards']['Row'] & {
-  cards: Database['public']['Tables']['cards']['Row']
-};
+import { format, formatDistanceToNow } from 'date-fns';
 
 const Cards = () => {
   const { toast } = useToast();
   const [isRolling, setIsRolling] = useState(false);
   const [countdown, setCountdown] = useState('');
 
-  // Query for the last roll time
   const { data: lastRoll, refetch: refetchLastRoll } = useQuery({
     queryKey: ['lastRoll'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
-
       const { data: userCards, error } = await supabase
         .from('user_cards')
         .select('last_roll_at')
-        .eq('user_id', session.user.id)
         .order('last_roll_at', { ascending: false })
         .limit(1);
 
-      if (error) {
-        console.error('Error fetching last roll:', error);
-        throw error;
-      }
+      if (error) throw error;
       return userCards?.[0]?.last_roll_at;
     },
   });
 
-  // Query for recent cards
-  const { data: recentCards, refetch: refetchCards } = useQuery({
+  const { data: recentCards } = useQuery({
     queryKey: ['recentCards'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
-
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
           *,
           cards (*)
         `)
-        .eq('user_id', session.user.id)
         .order('collected_at', { ascending: false })
         .limit(6);
 
-      if (error) {
-        console.error('Error fetching recent cards:', error);
-        throw error;
-      }
-      return data as UserCard[];
+      if (error) throw error;
+      return data;
     },
     refetchInterval: 10000, // Refetch every 10 seconds
   });
@@ -99,15 +78,8 @@ const Cards = () => {
       setIsRolling(true);
       
       // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "You must be logged in to roll cards.",
-        });
-        return;
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
       
       // Get a random card
       const { data: cards, error: cardsError } = await supabase
@@ -123,7 +95,7 @@ const Cards = () => {
         .from('user_cards')
         .insert({
           card_id: randomCard.id,
-          user_id: session.user.id,
+          user_id: user.id,
         });
       
       if (insertError) throw insertError;
@@ -133,8 +105,7 @@ const Cards = () => {
         description: `You got ${randomCard.title} (${randomCard.rarity})!`,
       });
 
-      // Refetch data to update the UI
-      await Promise.all([refetchLastRoll(), refetchCards()]);
+      refetchLastRoll();
       
     } catch (error) {
       console.error('Error rolling card:', error);
@@ -184,7 +155,6 @@ const Cards = () => {
                   location={userCard.cards.location}
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
-                  uniqueCardId={userCard.unique_card_id}
                 />
               ))}
             </div>

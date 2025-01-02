@@ -11,91 +11,30 @@ import Cards from "./pages/Cards";
 import Collection from "./pages/Collection";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Initial session check:", { session, error });
-        
-        if (error) {
-          console.error("Session error:", error);
-          toast({
-            variant: "destructive",
-            title: "Authentication Error",
-            description: "Please try logging in again.",
-          });
-        }
-        
-        setSession(session);
-      } catch (err) {
-        console.error("Auth initialization error:", err);
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "There was a problem connecting to the authentication service.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state change:", event, session);
-      
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
-      }
-      
-      if (event === 'SIGNED_OUT') {
-        try {
-          await supabase.auth.signOut();
-          toast({
-            title: "Signed out",
-            description: "You have been signed out of your account.",
-          });
-        } catch (error) {
-          console.error("Sign out error:", error);
-        }
-      }
-
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [toast]);
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   if (!session) {
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to="/auth/login" />;
   }
 
   return children;
