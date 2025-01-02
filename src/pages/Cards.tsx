@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { CollectibleCard } from '@/components/CollectibleCard';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 
 const Cards = () => {
   const { toast } = useToast();
@@ -16,9 +16,13 @@ const Cards = () => {
   const { data: lastRoll, refetch: refetchLastRoll } = useQuery({
     queryKey: ['lastRoll'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       const { data: userCards, error } = await supabase
         .from('user_cards')
         .select('last_roll_at')
+        .eq('user_id', user.id)
         .order('last_roll_at', { ascending: false })
         .limit(1);
 
@@ -34,11 +38,12 @@ const Cards = () => {
         .from('user_cards')
         .select(`
           *,
-          cards (*)
+          cards (*),
+          profiles (email)
         `)
         .order('collected_at', { ascending: false })
-        .limit(6);
-
+        .limit(3);
+      
       if (error) throw error;
       return data;
     },
@@ -77,11 +82,9 @@ const Cards = () => {
     try {
       setIsRolling(true);
       
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
       
-      // Get a random card
       const { data: cards, error: cardsError } = await supabase
         .from('cards')
         .select('*');
@@ -90,7 +93,6 @@ const Cards = () => {
       
       const randomCard = cards[Math.floor(Math.random() * cards.length)];
       
-      // Add card to user's collection
       const { error: insertError } = await supabase
         .from('user_cards')
         .insert({
@@ -155,6 +157,8 @@ const Cards = () => {
                   location={userCard.cards.location}
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
+                  uniqueCardId={userCard.unique_card_id}
+                  userName={userCard.profiles.email}
                 />
               ))}
             </div>

@@ -44,28 +44,25 @@ export const Hero = () => {
 
         <div className="flex gap-6 justify-center mt-12 overflow-x-auto pb-8">
           <CollectibleCard
-            imageUrl="https://images.unsplash.com/photo-1553462167-103041ad6e71?q=80&w=2535&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            imageUrl="https://images.unsplash.com/photo-1553462167-103041ad6e71"
             title="Mount Cook"
             location="Southern Alps"
             rarity="legendary"
-            collectedAt=""
-            uniqueCardId="MCK2024000001"
+            isPreview={true}
           />
           <CollectibleCard
             imageUrl="https://images.unsplash.com/photo-1507699622108-4be3abd695ad"
             title="Milford Sound"
             location="Fiordland"
             rarity="epic"
-            collectedAt=""
-            uniqueCardId="MFS2024000002"
+            isPreview={true}
           />
           <CollectibleCard
             imageUrl="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6"
             title="Cathedral Cove"
             location="Coromandel"
             rarity="rare"
-            collectedAt=""
-            uniqueCardId="CCV2024000003"
+            isPreview={true}
           />
         </div>
       </div>

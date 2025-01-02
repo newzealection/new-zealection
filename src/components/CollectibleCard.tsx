@@ -6,11 +6,12 @@ interface CollectibleCardProps {
   title: string;
   location: string;
   rarity: string;
-  collectedAt: string;
+  collectedAt?: string;
   uniqueCardId?: string;
   description?: string;
   userName?: string;
   showFlip?: boolean;
+  isPreview?: boolean;
 }
 
 export const CollectibleCard = ({ 
@@ -22,7 +23,8 @@ export const CollectibleCard = ({
   uniqueCardId,
   description,
   userName,
-  showFlip = false
+  showFlip = false,
+  isPreview = false
 }: CollectibleCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -64,20 +66,17 @@ export const CollectibleCard = ({
             alt={title}
             className="w-full h-full object-cover transition-transform duration-300"
             style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }}
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e';
-            }}
           />
           
-          {/* Card ID at top right */}
-          {uniqueCardId && (
+          {/* Card ID at top right - only show if not preview */}
+          {!isPreview && uniqueCardId && (
             <div className="absolute top-2 right-2 z-20 bg-black/60 px-2 py-1 rounded text-xs font-mono text-white">
               {uniqueCardId}
             </div>
           )}
 
-          {/* Username at top left if provided */}
-          {userName && (
+          {/* Username at top left if provided and not preview */}
+          {!isPreview && userName && (
             <div className="absolute top-2 left-2 z-20 bg-black/60 px-2 py-1 rounded text-xs text-white">
               {userName}
             </div>
@@ -93,8 +92,8 @@ export const CollectibleCard = ({
               </span>
             </div>
             <h3 className="text-xl font-semibold text-white mb-1">{title}</h3>
-            {collectedAt !== 'Sample Card' && (
-              <p className="text-sm text-gray-300 mb-1">Collected on {collectedAt}</p>
+            {!isPreview && collectedAt && (
+              <p className="text-sm text-gray-300">Collected on {collectedAt}</p>
             )}
           </div>
         </div>

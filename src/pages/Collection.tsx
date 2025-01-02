@@ -143,6 +143,8 @@ const Collection = () => {
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
                   uniqueCardId={userCard.unique_card_id}
+                  description={userCard.cards.description}
+                  showFlip={true}
                 />
               ))}
             </div>

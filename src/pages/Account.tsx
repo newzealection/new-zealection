@@ -6,10 +6,28 @@ import { Settings, LogOut, Mail, User as UserIcon } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 const Account = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const { data: userEmail } = useQuery({
+    queryKey: ['userEmail'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return profile?.email;
+    },
+  });
 
   const handleSignOut = async () => {
     try {
@@ -44,8 +62,8 @@ const Account = () => {
               <UserIcon className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">My Account</h1>
-              <p className="text-stone-200">Manage your New Zealection account settings</p>
+              <h1 className="text-4xl font-bold text-gray-900">{userEmail || 'Loading...'}</h1>
+              <p className="text-gray-600">Manage your New Zealection account settings</p>
             </div>
           </div>
 
