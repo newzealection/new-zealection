@@ -98,4 +98,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 }

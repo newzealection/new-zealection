@@ -13,28 +13,34 @@ export type Database = {
         Row: {
           card_code: string
           created_at: string
+          description: string
           id: string
           image_url: string
           location: string
           rarity: Database["public"]["Enums"]["card_rarity"]
+          season: string
           title: string
         }
         Insert: {
           card_code?: string
           created_at?: string
+          description?: string
           id?: string
           image_url: string
           location: string
           rarity?: Database["public"]["Enums"]["card_rarity"]
+          season?: string
           title: string
         }
         Update: {
           card_code?: string
           created_at?: string
+          description?: string
           id?: string
           image_url?: string
           location?: string
           rarity?: Database["public"]["Enums"]["card_rarity"]
+          season?: string
           title?: string
         }
         Relationships: []
@@ -100,12 +106,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_unique_card_id: {
-        Args: {
-          card_code: string
-        }
-        Returns: string
-      }
+      generate_unique_card_id:
+        | {
+            Args: {
+              card_code: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              card_code: string
+              season: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       card_rarity: "common" | "rare" | "epic" | "legendary"

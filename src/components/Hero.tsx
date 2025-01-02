@@ -48,21 +48,24 @@ export const Hero = () => {
             title="Mount Cook"
             location="Southern Alps"
             rarity="legendary"
-            collectedAt="Sample Card"
+            collectedAt=""
+            uniqueCardId="MCK2024000001"
           />
           <CollectibleCard
             imageUrl="https://images.unsplash.com/photo-1507699622108-4be3abd695ad"
             title="Milford Sound"
             location="Fiordland"
             rarity="epic"
-            collectedAt="Sample Card"
+            collectedAt=""
+            uniqueCardId="MFS2024000002"
           />
           <CollectibleCard
             imageUrl="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6"
             title="Cathedral Cove"
             location="Coromandel"
             rarity="rare"
-            collectedAt="Sample Card"
+            collectedAt=""
+            uniqueCardId="CCV2024000003"
           />
         </div>
       </div>

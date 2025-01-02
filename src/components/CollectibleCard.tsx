@@ -8,6 +8,9 @@ interface CollectibleCardProps {
   rarity: string;
   collectedAt: string;
   uniqueCardId?: string;
+  description?: string;
+  userName?: string;
+  showFlip?: boolean;
 }
 
 export const CollectibleCard = ({ 
@@ -16,15 +19,25 @@ export const CollectibleCard = ({
   location, 
   rarity, 
   collectedAt,
-  uniqueCardId 
+  uniqueCardId,
+  description,
+  userName,
+  showFlip = false
 }: CollectibleCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   const rarityColors = {
     legendary: 'bg-yellow-500/80',
     epic: 'bg-purple-500/80',
     rare: 'bg-blue-500/80',
     common: 'bg-gray-500/80',
+  };
+
+  const handleClick = () => {
+    if (showFlip && description) {
+      setIsFlipped(!isFlipped);
+    }
   };
 
   return (
@@ -34,33 +47,71 @@ export const CollectibleCard = ({
       transition={{ duration: 0.3 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
+      onClick={handleClick}
+      style={{ transformStyle: 'preserve-3d' }}
     >
-      <div className="absolute inset-0 bg-black/20 z-10" />
-      <img
-        src={imageUrl}
-        alt={title}
-        className="w-full h-full object-cover transition-transform duration-300"
-        style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }}
-      />
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent z-20">
-        <div className="flex flex-wrap gap-2 mb-2">
-          <span className={`inline-block px-2 py-1 text-xs font-medium text-white ${rarityColors[rarity as keyof typeof rarityColors]} rounded-full`}>
-            {rarity}
-          </span>
-          <span className="inline-block px-2 py-1 text-xs font-medium text-white bg-nzgreen-500/80 rounded-full">
-            {location}
-          </span>
-        </div>
-        <h3 className="text-xl font-semibold text-white mb-1">{title}</h3>
-        {collectedAt !== 'Sample Card' && (
-          <>
-            <p className="text-sm text-gray-300 mb-1">Collected on {collectedAt}</p>
-            {uniqueCardId && (
-              <p className="text-xs text-gray-400">Card ID: {uniqueCardId}</p>
+      <motion.div
+        className="w-full h-full"
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.6 }}
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        {/* Front of card */}
+        <div className={`absolute inset-0 ${isFlipped ? 'backface-hidden' : ''}`}>
+          <div className="absolute inset-0 bg-black/20 z-10" />
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300"
+            style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }}
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e';
+            }}
+          />
+          
+          {/* Card ID at top right */}
+          {uniqueCardId && (
+            <div className="absolute top-2 right-2 z-20 bg-black/60 px-2 py-1 rounded text-xs font-mono text-white">
+              {uniqueCardId}
+            </div>
+          )}
+
+          {/* Username at top left if provided */}
+          {userName && (
+            <div className="absolute top-2 left-2 z-20 bg-black/60 px-2 py-1 rounded text-xs text-white">
+              {userName}
+            </div>
+          )}
+
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent z-20">
+            <div className="flex flex-wrap gap-2 mb-2">
+              <span className={`inline-block px-2 py-1 text-xs font-medium text-white ${rarityColors[rarity as keyof typeof rarityColors]} rounded-full`}>
+                {rarity}
+              </span>
+              <span className="inline-block px-2 py-1 text-xs font-medium text-white bg-nzgreen-500/80 rounded-full">
+                {location}
+              </span>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-1">{title}</h3>
+            {collectedAt !== 'Sample Card' && (
+              <p className="text-sm text-gray-300 mb-1">Collected on {collectedAt}</p>
             )}
-          </>
+          </div>
+        </div>
+
+        {/* Back of card */}
+        {showFlip && description && (
+          <div 
+            className={`absolute inset-0 bg-nzgreen-500 p-6 ${isFlipped ? '' : 'backface-hidden'}`}
+            style={{ transform: 'rotateY(180deg)' }}
+          >
+            <div className="h-full flex flex-col justify-center items-center text-white">
+              <h3 className="text-2xl font-bold mb-4">{title}</h3>
+              <p className="text-center">{description}</p>
+            </div>
+          </div>
         )}
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
