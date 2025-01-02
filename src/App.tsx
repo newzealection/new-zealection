@@ -13,7 +13,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<any>(null);
@@ -21,22 +28,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log("Initial session check:", { session, error });
-      if (error) {
-        console.error("Session error:", error);
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Initial session check:", { session, error });
+        
+        if (error) {
+          console.error("Session error:", error);
+          toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "Please try logging in again.",
+          });
+        }
+        
+        setSession(session);
+      } catch (err) {
+        console.error("Auth initialization error:", err);
         toast({
           variant: "destructive",
           title: "Authentication Error",
-          description: "Please try logging in again.",
+          description: "There was a problem connecting to the authentication service.",
         });
+      } finally {
+        setLoading(false);
       }
-      setSession(session);
-      setLoading(false);
-    });
+    };
 
-    // Set up auth state listener
+    initializeAuth();
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -47,18 +67,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (event === 'SIGNED_OUT') {
-        // Clear any stored tokens
-        await supabase.auth.signOut();
-        toast({
-          title: "Signed out",
-          description: "You have been signed out of your account.",
-        });
+        try {
+          await supabase.auth.signOut();
+          toast({
+            title: "Signed out",
+            description: "You have been signed out of your account.",
+          });
+        } catch (error) {
+          console.error("Sign out error:", error);
+        }
       }
 
       setSession(session);
     });
 
-    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };
@@ -73,7 +95,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!session) {
-    return <Navigate to="/auth/login" />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   return children;
