@@ -6,6 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from 'date-fns';
+import { Database } from '@/integrations/supabase/types';
+
+type UserCard = Database['public']['Tables']['user_cards']['Row'] & {
+  cards: Database['public']['Tables']['cards']['Row']
+};
 
 const Collection = () => {
   const [sortBy, setSortBy] = useState<'rarity' | 'location' | 'collected'>('rarity');
@@ -18,20 +23,14 @@ const Collection = () => {
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
-          card_id,
-          collected_at,
-          unique_card_id,
-          cards (
-            id,
-            title,
-            location,
-            image_url,
-            rarity
-          )
-        `);
+          *,
+          cards (*)
+        `)
+        .order('collected_at', { ascending: false })
+        .limit(6);
       
       if (error) throw error;
-      return data;
+      return data as UserCard[];
     },
   });
 
