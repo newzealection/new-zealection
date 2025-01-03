@@ -51,14 +51,14 @@ export const Hero = () => {
             isPreview={true}
           />
           <CollectibleCard
-            imageUrl="https://images.unsplash.com/photo-1507699622108-4be3abd695ad"
+            imageUrl="https://images.unsplash.com/photo-1495072667656-424d680e6299?q=80&w=2500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             title="Milford Sound"
             location="Fiordland"
             rarity="epic"
             isPreview={true}
           />
           <CollectibleCard
-            imageUrl="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6"
+            imageUrl="https://images.unsplash.com/photo-1542243337-8a2c60753f6e?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             title="Cathedral Cove"
             location="Coromandel"
             rarity="rare"
