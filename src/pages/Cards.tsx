@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Navbar } from '../components/Navbar';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { CollectibleCard } from '@/components/CollectibleCard';
-import { format } from 'date-fns';
+import { format, differenceInHours } from 'date-fns';
 
 const Cards = () => {
   const { toast } = useToast();
   const [isRolling, setIsRolling] = useState(false);
-  const [countdown, setCountdown] = useState('');
+  const [countdown, setCountdown] = useState('Roll Now!');
 
   const { data: lastRoll, refetch: refetchLastRoll } = useQuery({
     queryKey: ['lastRoll'],
@@ -44,12 +44,42 @@ const Cards = () => {
         .limit(3);
       
       if (error) throw error;
+      console.log('Fetched user cards:', data);
       return data;
     },
     refetchInterval: 10000, // Refetch every 10 seconds
   });
 
-  // ... keep existing code (countdown effect and canRoll calculation)
+  // Calculate if user can roll based on last roll time
+  const canRoll = !lastRoll || differenceInHours(new Date(), new Date(lastRoll)) >= 24;
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!lastRoll) {
+        setCountdown('Roll Now!');
+        return;
+      }
+
+      const lastRollDate = new Date(lastRoll);
+      const nextRollDate = new Date(lastRollDate.getTime() + 24 * 60 * 60 * 1000);
+      const now = new Date();
+      
+      if (now >= nextRollDate) {
+        setCountdown('Roll Now!');
+        return;
+      }
+
+      const diffHours = Math.floor((nextRollDate.getTime() - now.getTime()) / (1000 * 60 * 60));
+      const diffMinutes = Math.floor(((nextRollDate.getTime() - now.getTime()) % (1000 * 60 * 60)) / (1000 * 60));
+      
+      setCountdown(`Wait ${diffHours}h ${diffMinutes}m`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [lastRoll]);
 
   const handleRoll = async () => {
     try {
