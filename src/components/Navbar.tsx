@@ -12,7 +12,7 @@ export const Navbar = () => {
               alt="New Zealection Logo" 
               className="h-8 w-8 object-contain"
             />
-            <span className="text-xl font-bold text-nzgreen-500">New Zealection</span>
+            <span className="text-2xl font-semibold text-nzgreen-500 font-sans tracking-wide">New<span className="text-blue-600 font-bold">Zeal</span>ection</span>
           </Link>
           
           <div className="flex items-center space-x-4">
