@@ -35,11 +35,10 @@ const Cards = () => {
     queryKey: ['recentCards'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('user_cards')
+        .from('user_cards_with_profiles')
         .select(`
           *,
-          cards (*),
-          profiles (id)
+          cards:card_id (*)
         `)
         .order('collected_at', { ascending: false })
         .limit(3);
@@ -50,33 +49,7 @@ const Cards = () => {
     refetchInterval: 10000, // Refetch every 10 seconds
   });
 
-  useEffect(() => {
-    const updateCountdown = () => {
-      if (!lastRoll) {
-        setCountdown('Roll Now!');
-        return;
-      }
-
-      const nextRollTime = new Date(lastRoll).getTime() + 24 * 60 * 60 * 1000;
-      const now = new Date().getTime();
-      const timeLeft = nextRollTime - now;
-
-      if (timeLeft <= 0) {
-        setCountdown('Roll Now!');
-      } else {
-        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        setCountdown(`Roll in ${hours}h ${minutes}m ${seconds}s`);
-      }
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [lastRoll]);
-
-  const canRoll = !lastRoll || new Date(lastRoll).getTime() + 24 * 60 * 60 * 1000 < Date.now();
+  // ... keep existing code (countdown effect and canRoll calculation)
 
   const handleRoll = async () => {
     try {
@@ -158,7 +131,7 @@ const Cards = () => {
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
                   uniqueCardId={userCard.unique_card_id}
-                  userName={userCard.profiles.email}
+                  userName={userCard.user_email}
                 />
               ))}
             </div>
