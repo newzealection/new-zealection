@@ -39,7 +39,7 @@ const Cards = () => {
         .select(`
           *,
           cards (*),
-          profiles (email)
+          profiles (id)
         `)
         .order('collected_at', { ascending: false })
         .limit(3);
