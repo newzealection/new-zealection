@@ -15,6 +15,9 @@ const Collection = () => {
   const { data: userCards, isLoading } = useQuery({
     queryKey: ['userCards'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
@@ -29,9 +32,11 @@ const Collection = () => {
             rarity,
             description
           )
-        `);
+        `)
+        .eq('user_id', user.id);
       
       if (error) throw error;
+      console.log('Fetched user cards:', data); // Debug log
       return data;
     },
   });
@@ -137,7 +142,7 @@ const Collection = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedAndFilteredCards.map((userCard) => (
                 <CollectibleCard
-                  key={userCard.card_id}
+                  key={userCard.unique_card_id}
                   imageUrl={userCard.cards.image_url}
                   title={userCard.cards.title}
                   location={userCard.cards.location}
