@@ -6,8 +6,13 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/50 backdrop-blur-sm border-b border-gray-200/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="text-xl font-bold text-nzgreen-500">
-            New Zealection
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="https://i.imghippo.com/files/vrF1570ATw.png" 
+              alt="New Zealection Logo" 
+              className="h-8 w-8 object-contain"
+            />
+            <span className="text-xl font-bold text-nzgreen-500">New Zealection</span>
           </Link>
           
           <div className="flex items-center space-x-4">
