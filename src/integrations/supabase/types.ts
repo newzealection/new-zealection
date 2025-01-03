@@ -103,7 +103,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_cards_with_profiles: {
+        Row: {
+          card_id: string | null
+          collected_at: string | null
+          id: string | null
+          last_roll_at: string | null
+          profile_created_at: string | null
+          unique_card_id: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cards_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       generate_unique_card_id:
