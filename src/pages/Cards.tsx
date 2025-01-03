@@ -158,7 +158,7 @@ const Cards = () => {
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
                   uniqueCardId={userCard.unique_card_id}
-                  userName={userCard.profiles.id}
+                  userName={userCard.profiles.email}
                 />
               ))}
             </div>
