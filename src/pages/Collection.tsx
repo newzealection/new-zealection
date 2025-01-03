@@ -26,7 +26,8 @@ const Collection = () => {
             title,
             location,
             image_url,
-            rarity
+            rarity,
+            description
           )
         `);
       
