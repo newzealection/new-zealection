@@ -11,6 +11,7 @@ import Cards from "./pages/Cards";
 import Collection from "./pages/Collection";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!session) {
+    toast({
+      title: "Authentication Required",
+      description: "Please sign in to access this feature.",
+      variant: "default",
+    });
     return <Navigate to="/auth/login" />;
   }
 
@@ -54,8 +60,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public route */}
+          {/* Public routes */}
           <Route path="/" element={<Index />} />
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/callback" element={<Callback />} />
           
           {/* Protected routes */}
           <Route
@@ -82,10 +90,6 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          
-          {/* Auth routes */}
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/callback" element={<Callback />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
