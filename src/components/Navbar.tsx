@@ -19,7 +19,7 @@ export const Navbar = () => {
               alt="New Zealection Logo" 
               className="h-8 w-8 object-contain"
             />
-            <span className="text-xl font-semibold tracking-tight text-nzgreen-600 hover:text-nzgreen-500 transition-colors duration-200">
+            <span className="text-2xl sm:text-3xl font-semibold tracking-tight text-nzgreen-600 hover:text-nzgreen-500 transition-colors duration-200">
               New Zealection
             </span>
           </Link>
