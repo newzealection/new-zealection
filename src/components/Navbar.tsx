@@ -17,9 +17,9 @@ export const Navbar = () => {
             <img 
               src="https://i.imghippo.com/files/vrF1570ATw.png" 
               alt="New Zealection Logo" 
-              className="h-8 w-auto"
+              className="h-8 w-8 object-contain"
             />
-            <span className="text-xl font-bold text-nzgreen-500">New Zealection</span>
+            <span className="text-xl font-bold text-gray-800 hover:text-nzgreen-500 transition-colors">New Zealection</span>
           </Link>
           
           {/* Desktop Navigation */}

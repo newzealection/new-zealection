@@ -100,12 +100,20 @@ export const CollectibleCard = ({
         {/* Back of card */}
         {showFlip && description && (
           <div 
-            className={`absolute inset-0 bg-nzgreen-500 p-4 sm:p-6 ${isFlipped ? '' : 'backface-hidden'}`}
-            style={{ transform: 'rotateY(180deg)' }}
+            className={`absolute inset-0 p-6 ${isFlipped ? '' : 'backface-hidden'}`}
+            style={{ 
+              transform: 'rotateY(180deg)',
+              backgroundImage: 'url(https://i.imghippo.com/files/rs5370hFA.jpeg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
           >
-            <div className="h-full flex flex-col justify-center items-center text-white">
-              <h3 className="text-xl sm:text-2xl font-bold mb-4">{title}</h3>
-              <p className="text-sm sm:text-base text-center">{description}</p>
+            {/* Blur overlay */}
+            <div className="absolute inset-0 backdrop-blur-md bg-black/40" />
+            
+            <div className="relative h-full flex flex-col justify-center items-center text-white z-10">
+              <h3 className="text-2xl font-bold mb-4">{title}</h3>
+              <p className="text-center">{description}</p>
             </div>
           </div>
         )}
