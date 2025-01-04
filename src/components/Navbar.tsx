@@ -17,7 +17,7 @@ export const Navbar = () => {
             <img 
               src="https://i.imghippo.com/files/vrF1570ATw.png" 
               alt="New Zealection Logo" 
-              className="h-15 w-15 object-contain"
+              className="h-12 w-12 object-contain"
             />
             <span className="text-2xl sm:text-3xl font-semibold tracking-tight text-nzgreen-600 hover:text-nzgreen-500 transition-colors duration-200">
               New Zealection
