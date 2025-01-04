@@ -30,7 +30,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-nzgreen-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
@@ -47,22 +54,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute>
-                <Account />
-              </ProtectedRoute>
-            }
-          />
+          {/* Public route */}
+          <Route path="/" element={<Index />} />
+          
+          {/* Protected routes */}
           <Route
             path="/cards"
             element={
@@ -79,6 +74,16 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Auth routes */}
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/callback" element={<Callback />} />
         </Routes>
