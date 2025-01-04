@@ -17,42 +17,44 @@ export const Navbar = () => {
             <img 
               src="https://i.imghippo.com/files/vrF1570ATw.png" 
               alt="New Zealection Logo" 
-              className="h-8 w-8 object-contain"
+              className="h-12 w-12 object-contain"
             />
-            <span className="text-xl font-bold text-gray-800 hover:text-nzgreen-500 transition-colors">New Zealection</span>
+            <span className="text-2xl sm:text-3xl font-semibold tracking-tight text-nzgreen-600 hover:text-nzgreen-500 transition-colors duration-200">
+              New Zealection
+            </span>
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
-              className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
             >
-              <Home className="w-5 h-5" />
+              <Home className="w-4 h-4" />
               <span>Home</span>
             </Link>
             
             <Link
               to="/cards"
-              className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
             >
-              <GalleryHorizontalEnd className="w-5 h-5" />
+              <GalleryHorizontalEnd className="w-4 h-4" />
               <span>Cards</span>
             </Link>
             
             <Link
               to="/collection"
-              className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
             >
-              <Library className="w-5 h-5" />
+              <Library className="w-4 h-4" />
               <span>Collection</span>
             </Link>
             
             <Link
               to="/account"
-              className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
             >
-              <User className="w-5 h-5" />
+              <User className="w-4 h-4" />
               <span>Account</span>
             </Link>
           </div>
@@ -60,7 +62,7 @@ export const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden p-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+            className="md:hidden p-2 rounded-md text-stone-600 hover:text-nzgreen-500 hover:bg-nzgreen-50 transition-all duration-200"
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -71,37 +73,37 @@ export const Navbar = () => {
           <div className="md:hidden py-4 space-y-2">
             <Link
               to="/"
-              className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
               onClick={() => setIsMenuOpen(false)}
             >
-              <Home className="w-5 h-5" />
+              <Home className="w-4 h-4" />
               <span>Home</span>
             </Link>
             
             <Link
               to="/cards"
-              className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
               onClick={() => setIsMenuOpen(false)}
             >
-              <GalleryHorizontalEnd className="w-5 h-5" />
+              <GalleryHorizontalEnd className="w-4 h-4" />
               <span>Cards</span>
             </Link>
             
             <Link
               to="/collection"
-              className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
               onClick={() => setIsMenuOpen(false)}
             >
-              <Library className="w-5 h-5" />
+              <Library className="w-4 h-4" />
               <span>Collection</span>
             </Link>
             
             <Link
               to="/account"
-              className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-600 hover:text-nzgreen-500 hover:bg-white/80 transition-colors"
+              className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
               onClick={() => setIsMenuOpen(false)}
             >
-              <User className="w-5 h-5" />
+              <User className="w-4 h-4" />
               <span>Account</span>
             </Link>
           </div>

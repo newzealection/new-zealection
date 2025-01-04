@@ -11,6 +11,7 @@ import Cards from "./pages/Cards";
 import Collection from "./pages/Collection";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -30,10 +31,22 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-nzgreen-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
+    toast({
+      title: "Authentication Required",
+      description: "Please sign in to access this feature.",
+      variant: "default",
+    });
     return <Navigate to="/auth/login" />;
   }
 
@@ -47,22 +60,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute>
-                <Account />
-              </ProtectedRoute>
-            }
-          />
+          {/* Public routes */}
+          <Route path="/" element={<Index />} />
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/callback" element={<Callback />} />
+          
+          {/* Protected routes */}
           <Route
             path="/cards"
             element={
@@ -79,8 +82,14 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/callback" element={<Callback />} />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
