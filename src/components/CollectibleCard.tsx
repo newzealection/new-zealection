@@ -59,7 +59,10 @@ export const CollectibleCard = ({
         style={{ transformStyle: 'preserve-3d' }}
       >
         {/* Front of card */}
-        <div className={`absolute inset-0 ${isFlipped ? 'backface-hidden' : ''}`}>
+        <div 
+          className={`absolute inset-0 w-full h-full ${isFlipped ? 'backface-hidden opacity-0' : 'opacity-100'}`}
+          style={{ transition: 'opacity 0.3s ease-in-out' }}
+        >
           <div className="absolute inset-0 bg-black/20 z-10" />
           <img
             src={imageUrl}
@@ -100,12 +103,13 @@ export const CollectibleCard = ({
         {/* Back of card */}
         {showFlip && description && (
           <div 
-            className={`absolute inset-0 p-6 ${isFlipped ? '' : 'backface-hidden'}`}
+            className={`absolute inset-0 p-6 ${isFlipped ? 'opacity-100' : 'opacity-0 backface-hidden'}`}
             style={{ 
               transform: 'rotateY(180deg)',
               backgroundImage: 'url(https://i.imghippo.com/files/rs5370hFA.jpeg)',
               backgroundSize: 'cover',
-              backgroundPosition: 'center'
+              backgroundPosition: 'center',
+              transition: 'opacity 0.3s ease-in-out'
             }}
           >
             {/* Blur overlay */}

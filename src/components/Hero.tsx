@@ -42,8 +42,8 @@ export const Hero = () => {
           </Link>
         </motion.div>
 
-        <div className="flex flex-col sm:flex-row gap-6 justify-center mt-12 px-4">
-          <div className="w-full sm:w-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-12 px-4">
+          <div className="w-full">
             <CollectibleCard
               imageUrl="https://images.unsplash.com/photo-1553462167-103041ad6e71"
               title="Mount Cook"
@@ -52,7 +52,7 @@ export const Hero = () => {
               isPreview={true}
             />
           </div>
-          <div className="hidden sm:block w-full sm:w-auto">
+          <div className="w-full">
             <CollectibleCard
               imageUrl="https://images.unsplash.com/photo-1495072667656-424d680e6299"
               title="Milford Sound"
@@ -61,7 +61,7 @@ export const Hero = () => {
               isPreview={true}
             />
           </div>
-          <div className="hidden md:block w-full sm:w-auto">
+          <div className="w-full">
             <CollectibleCard
               imageUrl="https://images.unsplash.com/photo-1542243337-8a2c60753f6e"
               title="Cathedral Cove"
