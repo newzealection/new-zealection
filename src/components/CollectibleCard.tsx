@@ -44,13 +44,13 @@ export const CollectibleCard = ({
 
   return (
     <motion.div
-      className="relative w-72 h-96 rounded-xl overflow-hidden cursor-pointer perspective-1000"
+      className="relative w-full sm:w-72 h-96 rounded-xl overflow-hidden cursor-pointer perspective-1000 mx-auto"
       whileHover={{ scale: 1.05 }}
       transition={{ duration: 0.3 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={handleClick}
-      style={{ transformStyle: 'preserve-3d' }}
+      style={{ transformStyle: 'preserve-3d', maxWidth: '100%' }}
     >
       <motion.div
         className="w-full h-full"
@@ -68,21 +68,20 @@ export const CollectibleCard = ({
             style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }}
           />
           
-          {/* Card ID at top right - only show if not preview */}
+          {/* Card details */}
           {!isPreview && uniqueCardId && (
             <div className="absolute top-2 right-2 z-20 bg-black/60 px-2 py-1 rounded text-xs font-mono text-white">
               {uniqueCardId}
             </div>
           )}
 
-          {/* Username at top left if provided and not preview */}
           {!isPreview && userName && (
             <div className="absolute top-2 left-2 z-20 bg-black/60 px-2 py-1 rounded text-xs text-white">
               {userName}
             </div>
           )}
 
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent z-20">
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/80 to-transparent z-20">
             <div className="flex flex-wrap gap-2 mb-2">
               <span className={`inline-block px-2 py-1 text-xs font-medium text-white ${rarityColors[rarity as keyof typeof rarityColors]} rounded-full`}>
                 {rarity}
@@ -91,9 +90,9 @@ export const CollectibleCard = ({
                 {location}
               </span>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-1">{title}</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-1">{title}</h3>
             {!isPreview && collectedAt && (
-              <p className="text-sm text-gray-300">Collected on {collectedAt}</p>
+              <p className="text-xs sm:text-sm text-gray-300">Collected on {collectedAt}</p>
             )}
           </div>
         </div>

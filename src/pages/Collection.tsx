@@ -36,7 +36,6 @@ const Collection = () => {
         .eq('user_id', user.id);
       
       if (error) throw error;
-      console.log('Fetched user cards:', data); // Debug log
       return data;
     },
   });
@@ -88,11 +87,11 @@ const Collection = () => {
           transition={{ duration: 0.6 }}
           className="max-w-7xl mx-auto"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">My Collection</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">My Collection</h1>
           
-          <div className="flex flex-wrap gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-8">
             <Select value={sortBy} onValueChange={(value: 'rarity' | 'location' | 'collected') => setSortBy(value)}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
               <SelectContent>
@@ -103,7 +102,7 @@ const Collection = () => {
             </Select>
 
             <Select value={filterRarity} onValueChange={setFilterRarity}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by rarity..." />
               </SelectTrigger>
               <SelectContent>
@@ -116,7 +115,7 @@ const Collection = () => {
             </Select>
 
             <Select value={filterLocation} onValueChange={setFilterLocation}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by location..." />
               </SelectTrigger>
               <SelectContent>
@@ -131,15 +130,15 @@ const Collection = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center">Loading your collection...</div>
+            <div className="text-center py-8">Loading your collection...</div>
           ) : sortedAndFilteredCards.length === 0 ? (
-            <div className="text-center text-gray-600">
+            <div className="text-center py-8 text-gray-600">
               {userCards?.length === 0 
                 ? "Your collection is empty. Visit the Cards page to roll for new cards!"
                 : "No cards match your current filters."}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {sortedAndFilteredCards.map((userCard) => (
                 <CollectibleCard
                   key={userCard.unique_card_id}
