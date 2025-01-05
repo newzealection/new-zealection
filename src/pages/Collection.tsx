@@ -20,8 +20,12 @@ const Collection = () => {
   const { data: userMana } = useQuery({
     queryKey: ['userMana'],
     queryFn: async () => {
+      console.log('Fetching user mana...');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('No user found');
+        throw new Error('User not authenticated');
+      }
 
       // Try to get existing mana record
       const { data: manaData, error: manaError } = await supabase
@@ -37,20 +41,26 @@ const Collection = () => {
 
       // If no mana record exists, create one
       if (!manaData) {
+        console.log('No mana record found, creating new one...');
         const { data: newManaData, error: createError } = await supabase
           .from('user_mana')
-          .insert([{ user_id: user.id, mana: 0 }])
+          .insert([{ 
+            user_id: user.id, 
+            mana: 0 
+          }])
           .select('mana')
-          .single();
+          .maybeSingle();
 
         if (createError) {
           console.error('Error creating mana record:', createError);
           throw createError;
         }
 
+        console.log('New mana record created:', newManaData);
         return newManaData?.mana || 0;
       }
 
+      console.log('Existing mana record found:', manaData);
       return manaData?.mana || 0;
     },
     retry: 1,
@@ -89,6 +99,7 @@ const Collection = () => {
   // Updated mutation for selling a card with better error handling
   const sellCardMutation = useMutation({
     mutationFn: async ({ cardId, manaValue }: { cardId: string, manaValue: number }) => {
+      console.log('Selling card:', { cardId, manaValue });
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -99,17 +110,28 @@ const Collection = () => {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (manaError) throw manaError;
+      if (manaError) {
+        console.error('Error fetching current mana:', manaError);
+        throw manaError;
+      }
 
       const newManaValue = (currentMana?.mana || 0) + manaValue;
+      console.log('Updating mana:', { currentMana: currentMana?.mana, newManaValue });
 
-      // Update mana in a transaction
+      // Update mana
       const { error: updateError } = await supabase
         .from('user_mana')
-        .upsert({ user_id: user.id, mana: newManaValue })
+        .upsert({ 
+          user_id: user.id, 
+          mana: newManaValue,
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating mana:', updateError);
+        throw updateError;
+      }
 
       // Delete the card
       const { error: deleteError } = await supabase
@@ -117,8 +139,12 @@ const Collection = () => {
         .delete()
         .eq('id', cardId);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Error deleting card:', deleteError);
+        throw deleteError;
+      }
 
+      console.log('Card sold successfully');
       return { cardId, manaValue, newManaValue };
     },
     onSuccess: (data) => {
