@@ -2,15 +2,37 @@ import React, { useState, useMemo } from 'react';
 import { Navbar } from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { CollectibleCard } from '@/components/CollectibleCard';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Collection = () => {
   const [sortBy, setSortBy] = useState<'rarity' | 'location' | 'collected'>('rarity');
   const [filterRarity, setFilterRarity] = useState<string>('all');
   const [filterLocation, setFilterLocation] = useState<string>('all');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Fetch user's mana
+  const { data: userMana } = useQuery({
+    queryKey: ['userMana'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('user_mana')
+        .select('mana')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data?.mana || 0;
+    },
+  });
 
   const { data: userCards, isLoading } = useQuery({
     queryKey: ['userCards'],
@@ -21,6 +43,7 @@ const Collection = () => {
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
+          id,
           card_id,
           collected_at,
           unique_card_id,
@@ -40,22 +63,75 @@ const Collection = () => {
     },
   });
 
+  // Mutation for selling a card
+  const sellCardMutation = useMutation({
+    mutationFn: async ({ cardId, manaValue }: { cardId: string, manaValue: number }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Start a transaction by updating user_mana first
+      const { error: manaError } = await supabase
+        .from('user_mana')
+        .update({ mana: userMana + manaValue })
+        .eq('user_id', user.id);
+
+      if (manaError) throw manaError;
+
+      // Then delete the card
+      const { error: deleteError } = await supabase
+        .from('user_cards')
+        .delete()
+        .eq('id', cardId);
+
+      if (deleteError) throw deleteError;
+
+      return { cardId, manaValue };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['userCards'] });
+      queryClient.invalidateQueries({ queryKey: ['userMana'] });
+      toast({
+        title: "Card sold successfully!",
+        description: `You received ${data.manaValue} mana.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error selling card",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const getManaValue = (rarity: string): number => {
+    const manaValues = {
+      legendary: 500,
+      epic: 400,
+      rare: 300,
+      common: 100,
+    };
+    return manaValues[rarity as keyof typeof manaValues] || 0;
+  };
+
+  const handleSellCard = (cardId: string, rarity: string) => {
+    const manaValue = getManaValue(rarity);
+    sellCardMutation.mutate({ cardId, manaValue });
+  };
+
   const sortedAndFilteredCards = useMemo(() => {
     if (!userCards) return [];
 
     let filteredCards = userCards;
 
-    // Apply rarity filter
     if (filterRarity !== 'all') {
       filteredCards = filteredCards.filter(card => card.cards.rarity === filterRarity);
     }
 
-    // Apply location filter
     if (filterLocation !== 'all') {
       filteredCards = filteredCards.filter(card => card.cards.location === filterLocation);
     }
 
-    // Sort cards
     return [...filteredCards].sort((a, b) => {
       switch (sortBy) {
         case 'rarity':
@@ -87,7 +163,14 @@ const Collection = () => {
           transition={{ duration: 0.6 }}
           className="max-w-7xl mx-auto"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">My Collection</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">My Collection</h1>
+            <div className="bg-nzgreen-500/10 px-4 py-2 rounded-lg">
+              <span className="text-lg font-semibold text-nzgreen-700">
+                {userMana} Mana
+              </span>
+            </div>
+          </div>
           
           <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-8">
             <Select value={sortBy} onValueChange={(value: 'rarity' | 'location' | 'collected') => setSortBy(value)}>
@@ -140,17 +223,27 @@ const Collection = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {sortedAndFilteredCards.map((userCard) => (
-                <CollectibleCard
-                  key={userCard.unique_card_id}
-                  imageUrl={userCard.cards.image_url}
-                  title={userCard.cards.title}
-                  location={userCard.cards.location}
-                  rarity={userCard.cards.rarity}
-                  collectedAt={format(new Date(userCard.collected_at), 'PPP')}
-                  uniqueCardId={userCard.unique_card_id}
-                  description={userCard.cards.description}
-                  showFlip={true}
-                />
+                <div key={userCard.unique_card_id} className="relative">
+                  <CollectibleCard
+                    imageUrl={userCard.cards.image_url}
+                    title={userCard.cards.title}
+                    location={userCard.cards.location}
+                    rarity={userCard.cards.rarity}
+                    collectedAt={format(new Date(userCard.collected_at), 'PPP')}
+                    uniqueCardId={userCard.unique_card_id}
+                    description={userCard.cards.description}
+                    showFlip={true}
+                  />
+                  <div className="absolute bottom-4 right-4 z-30">
+                    <Button
+                      onClick={() => handleSellCard(userCard.id, userCard.cards.rarity)}
+                      variant="secondary"
+                      className="bg-nzgreen-500 hover:bg-nzgreen-600 text-white"
+                    >
+                      Sell for {getManaValue(userCard.cards.rarity)} Mana
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
