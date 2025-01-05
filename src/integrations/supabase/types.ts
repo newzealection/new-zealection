@@ -101,6 +101,30 @@ export type Database = {
           },
         ]
       }
+      user_mana: {
+        Row: {
+          created_at: string
+          id: string
+          mana: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mana?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mana?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       user_cards_with_profiles: {
@@ -143,6 +167,7 @@ export type Database = {
     }
     Enums: {
       card_rarity: "common" | "rare" | "epic" | "legendary"
+      mana_value: "legendary_500" | "epic_400" | "rare_300" | "common_100"
     }
     CompositeTypes: {
       [_ in never]: never

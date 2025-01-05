@@ -67,16 +67,30 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/callback" element={<Callback />} />
-          <Route path="/summon" element={<Summon />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/battlefield" element={<Battlefield />} />
+          <Route path="/cards" element={<Cards />} />
           
           {/* Protected routes */}
           <Route
-            path="/cards"
+            path="/summon"
             element={
               <ProtectedRoute>
-                <Cards />
+                <Summon />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace"
+            element={
+              <ProtectedRoute>
+                <Marketplace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/battlefield"
+            element={
+              <ProtectedRoute>
+                <Battlefield />
               </ProtectedRoute>
             }
           />
