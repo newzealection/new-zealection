@@ -4,10 +4,11 @@ import { motion } from 'framer-motion';
 import { CollectibleCard } from '@/components/CollectibleCard';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { CollectionFilters } from '@/components/CollectionFilters';
+import { ManaDisplay } from '@/components/ManaDisplay';
 
 const Collection = () => {
   const [sortBy, setSortBy] = useState<'rarity' | 'location' | 'collected'>('rarity');
@@ -16,7 +17,6 @@ const Collection = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch user's mana with better error handling
   const { data: userMana } = useQuery({
     queryKey: ['userMana'],
     queryFn: async () => {
@@ -66,7 +66,6 @@ const Collection = () => {
     retry: 1,
   });
 
-  // Fetch user's cards
   const { data: userCards, isLoading } = useQuery({
     queryKey: ['userCards'],
     queryFn: async () => {
@@ -96,7 +95,6 @@ const Collection = () => {
     },
   });
 
-  // Updated mutation for selling a card with better error handling
   const sellCardMutation = useMutation({
     mutationFn: async ({ cardId, manaValue }: { cardId: string, manaValue: number }) => {
       console.log('Selling card:', { cardId, manaValue });
@@ -227,51 +225,19 @@ const Collection = () => {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">My Collection</h1>
             <div className="bg-nzgreen-500/10 px-4 py-2 rounded-lg">
-              <span className="text-lg font-semibold text-nzgreen-700">
-                {userMana ?? 0} Mana
-              </span>
+              <ManaDisplay amount={userMana ?? 0} className="text-lg font-semibold text-nzgreen-700" />
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-8">
-            <Select value={sortBy} onValueChange={(value: 'rarity' | 'location' | 'collected') => setSortBy(value)}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Sort by..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="rarity">Sort by Rarity</SelectItem>
-                <SelectItem value="location">Sort by Location</SelectItem>
-                <SelectItem value="collected">Sort by Collection Date</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterRarity} onValueChange={setFilterRarity}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by rarity..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Rarities</SelectItem>
-                <SelectItem value="legendary">Legendary</SelectItem>
-                <SelectItem value="epic">Epic</SelectItem>
-                <SelectItem value="rare">Rare</SelectItem>
-                <SelectItem value="common">Common</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterLocation} onValueChange={setFilterLocation}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by location..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {Array.from(locations).map(location => (
-                  <SelectItem key={location} value={location}>
-                    {location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <CollectionFilters
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            filterRarity={filterRarity}
+            setFilterRarity={setFilterRarity}
+            filterLocation={filterLocation}
+            setFilterLocation={setFilterLocation}
+            locations={locations}
+          />
 
           {isLoading ? (
             <div className="text-center py-8">Loading your collection...</div>
@@ -295,13 +261,19 @@ const Collection = () => {
                     description={userCard.cards.description}
                     showFlip={true}
                   />
+                  <div className="absolute top-4 left-4 z-30">
+                    <ManaDisplay 
+                      amount={getManaValue(userCard.cards.rarity)} 
+                      className="bg-black/60 text-white px-2 py-1 rounded text-sm" 
+                    />
+                  </div>
                   <div className="absolute bottom-4 right-4 z-30">
                     <Button
                       onClick={() => handleSellCard(userCard.id, userCard.cards.rarity)}
                       variant="secondary"
                       className="bg-nzgreen-500 hover:bg-nzgreen-600 text-white"
                     >
-                      Sell for {getManaValue(userCard.cards.rarity)} Mana
+                      Sell
                     </Button>
                   </div>
                 </div>
