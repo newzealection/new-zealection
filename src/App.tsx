@@ -9,6 +9,9 @@ import Callback from "./pages/auth/Callback";
 import Account from "./pages/Account";
 import Cards from "./pages/Cards";
 import Collection from "./pages/Collection";
+import Summon from "./pages/Summon";
+import Marketplace from "./pages/Marketplace";
+import Battlefield from "./pages/Battlefield";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -64,6 +67,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/callback" element={<Callback />} />
+          <Route path="/summon" element={<Summon />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/battlefield" element={<Battlefield />} />
           
           {/* Protected routes */}
           <Route
