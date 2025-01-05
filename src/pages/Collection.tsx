@@ -16,24 +16,47 @@ const Collection = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch user's mana
+  // Fetch user's mana with better error handling
   const { data: userMana } = useQuery({
     queryKey: ['userMana'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      // Try to get existing mana record
+      const { data: manaData, error: manaError } = await supabase
         .from('user_mana')
         .select('mana')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      if (error) throw error;
-      return data?.mana || 0;
+      if (manaError) {
+        console.error('Error fetching mana:', manaError);
+        throw manaError;
+      }
+
+      // If no mana record exists, create one
+      if (!manaData) {
+        const { data: newManaData, error: createError } = await supabase
+          .from('user_mana')
+          .insert([{ user_id: user.id, mana: 0 }])
+          .select('mana')
+          .single();
+
+        if (createError) {
+          console.error('Error creating mana record:', createError);
+          throw createError;
+        }
+
+        return newManaData?.mana || 0;
+      }
+
+      return manaData?.mana || 0;
     },
+    retry: 1,
   });
 
+  // Fetch user's cards
   const { data: userCards, isLoading } = useQuery({
     queryKey: ['userCards'],
     queryFn: async () => {
@@ -63,21 +86,32 @@ const Collection = () => {
     },
   });
 
-  // Mutation for selling a card
+  // Updated mutation for selling a card with better error handling
   const sellCardMutation = useMutation({
     mutationFn: async ({ cardId, manaValue }: { cardId: string, manaValue: number }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Start a transaction by updating user_mana first
-      const { error: manaError } = await supabase
+      // Get current mana value first
+      const { data: currentMana, error: manaError } = await supabase
         .from('user_mana')
-        .update({ mana: userMana + manaValue })
-        .eq('user_id', user.id);
+        .select('mana')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (manaError) throw manaError;
 
-      // Then delete the card
+      const newManaValue = (currentMana?.mana || 0) + manaValue;
+
+      // Update mana in a transaction
+      const { error: updateError } = await supabase
+        .from('user_mana')
+        .upsert({ user_id: user.id, mana: newManaValue })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Delete the card
       const { error: deleteError } = await supabase
         .from('user_cards')
         .delete()
@@ -85,17 +119,18 @@ const Collection = () => {
 
       if (deleteError) throw deleteError;
 
-      return { cardId, manaValue };
+      return { cardId, manaValue, newManaValue };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
       toast({
         title: "Card sold successfully!",
-        description: `You received ${data.manaValue} mana.`,
+        description: `You received ${data.manaValue} mana. New balance: ${data.newManaValue} mana.`,
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      console.error('Error selling card:', error);
       toast({
         title: "Error selling card",
         description: error.message,
@@ -167,7 +202,7 @@ const Collection = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">My Collection</h1>
             <div className="bg-nzgreen-500/10 px-4 py-2 rounded-lg">
               <span className="text-lg font-semibold text-nzgreen-700">
-                {userMana} Mana
+                {userMana ?? 0} Mana
               </span>
             </div>
           </div>
