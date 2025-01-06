@@ -1,61 +1,129 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Navbar } from '../components/Navbar';
 import { motion } from 'framer-motion';
-import { CollectibleCard } from '@/components/CollectibleCard';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+import { AuthGuard } from '@/components/AuthGuard';
+import { useUserMana } from '@/hooks/useUserMana';
+import { useUserCards } from '@/hooks/useUserCards';
+import { FilterControls } from '@/components/collection/FilterControls';
+import { CardGrid } from '@/components/collection/CardGrid';
 
 const Collection = () => {
   const [sortBy, setSortBy] = useState<'rarity' | 'location' | 'collected'>('rarity');
   const [filterRarity, setFilterRarity] = useState<string>('all');
   const [filterLocation, setFilterLocation] = useState<string>('all');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const { data: userCards, isLoading } = useQuery({
-    queryKey: ['userCards'],
-    queryFn: async () => {
+  const { data: userMana } = useUserMana();
+  const { data: userCards, isLoading } = useUserCards();
+
+  const sellCardMutation = useMutation({
+    mutationFn: async ({ cardId, manaValue }: { cardId: string, manaValue: number }) => {
+      console.log('Selling card:', { cardId, manaValue });
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      // First verify the card exists
+      const { data: existingCard, error: checkError } = await supabase
         .from('user_cards')
-        .select(`
-          card_id,
-          collected_at,
-          unique_card_id,
-          cards (
-            id,
-            title,
-            location,
-            image_url,
-            rarity,
-            description
-          )
-        `)
-        .eq('user_id', user.id);
-      
-      if (error) throw error;
-      return data;
+        .select()
+        .eq('id', cardId)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking card:', checkError);
+        throw checkError;
+      }
+
+      if (!existingCard) {
+        throw new Error('Card not found or already sold');
+      }
+
+      // Then delete the card
+      const { error: deleteError } = await supabase
+        .from('user_cards')
+        .delete()
+        .eq('id', cardId);
+
+      if (deleteError) {
+        console.error('Error deleting card:', deleteError);
+        throw deleteError;
+      }
+
+      console.log('Card deleted successfully');
+
+      // Then update mana
+      const { data: updatedMana, error: updateError } = await supabase
+        .from('user_mana')
+        .update({ 
+          mana: userMana + manaValue,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .select()
+        .maybeSingle();
+
+      if (updateError) {
+        console.error('Error updating mana:', updateError);
+        throw updateError;
+      }
+
+      if (!updatedMana) {
+        throw new Error('Failed to update mana balance');
+      }
+
+      console.log('Mana updated successfully');
+      return { cardId, manaValue, newManaValue: userMana + manaValue };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['userCards'] });
+      queryClient.invalidateQueries({ queryKey: ['userMana'] });
+      toast({
+        title: "Card sold successfully!",
+        description: `You received ${data.manaValue} mana. New balance: ${data.newManaValue} mana.`,
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Error selling card:', error);
+      toast({
+        title: "Error selling card",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
+
+  const getManaValue = (rarity: string): number => {
+    const manaValues = {
+      legendary: 500,
+      epic: 400,
+      rare: 300,
+      common: 100,
+    };
+    return manaValues[rarity as keyof typeof manaValues] || 0;
+  };
+
+  const handleSellCard = (cardId: string, rarity: string) => {
+    const manaValue = getManaValue(rarity);
+    sellCardMutation.mutate({ cardId, manaValue });
+  };
 
   const sortedAndFilteredCards = useMemo(() => {
     if (!userCards) return [];
 
     let filteredCards = userCards;
 
-    // Apply rarity filter
     if (filterRarity !== 'all') {
       filteredCards = filteredCards.filter(card => card.cards.rarity === filterRarity);
     }
 
-    // Apply location filter
     if (filterLocation !== 'all') {
       filteredCards = filteredCards.filter(card => card.cards.location === filterLocation);
     }
 
-    // Sort cards
     return [...filteredCards].sort((a, b) => {
       switch (sortBy) {
         case 'rarity':
@@ -78,85 +146,57 @@ const Collection = () => {
   }, [userCards]);
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <Navbar />
-      <div className="container mx-auto px-4 pt-24">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-7xl mx-auto"
-        >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">My Collection</h1>
-          
-          <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-8">
-            <Select value={sortBy} onValueChange={(value: 'rarity' | 'location' | 'collected') => setSortBy(value)}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Sort by..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="rarity">Sort by Rarity</SelectItem>
-                <SelectItem value="location">Sort by Location</SelectItem>
-                <SelectItem value="collected">Sort by Collection Date</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterRarity} onValueChange={setFilterRarity}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by rarity..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Rarities</SelectItem>
-                <SelectItem value="legendary">Legendary</SelectItem>
-                <SelectItem value="epic">Epic</SelectItem>
-                <SelectItem value="rare">Rare</SelectItem>
-                <SelectItem value="common">Common</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterLocation} onValueChange={setFilterLocation}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by location..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {Array.from(locations).map(location => (
-                  <SelectItem key={location} value={location}>
-                    {location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {isLoading ? (
-            <div className="text-center py-8">Loading your collection...</div>
-          ) : sortedAndFilteredCards.length === 0 ? (
-            <div className="text-center py-8 text-gray-600">
-              {userCards?.length === 0 
-                ? "Your collection is empty. Visit the Cards page to roll for new cards!"
-                : "No cards match your current filters."}
+    <AuthGuard>
+      <div className="min-h-screen bg-stone-50">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-7xl mx-auto"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">My Collection</h1>
+              <div className="bg-nzgreen-500/10 px-4 py-2 rounded-lg flex items-center gap-2">
+                <span className="text-lg font-semibold text-nzgreen-700 flex items-center gap-2">
+                  <img 
+                    src="/lovable-uploads/75d6637e-1062-4fd8-b272-34dbb7e63acc.png" 
+                    alt="Mana" 
+                    className="w-5 h-5 object-contain"
+                  />
+                  {userMana ?? 0}
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {sortedAndFilteredCards.map((userCard) => (
-                <CollectibleCard
-                  key={userCard.unique_card_id}
-                  imageUrl={userCard.cards.image_url}
-                  title={userCard.cards.title}
-                  location={userCard.cards.location}
-                  rarity={userCard.cards.rarity}
-                  collectedAt={format(new Date(userCard.collected_at), 'PPP')}
-                  uniqueCardId={userCard.unique_card_id}
-                  description={userCard.cards.description}
-                  showFlip={true}
-                />
-              ))}
-            </div>
-          )}
-        </motion.div>
+            
+            <FilterControls
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              filterRarity={filterRarity}
+              setFilterRarity={setFilterRarity}
+              filterLocation={filterLocation}
+              setFilterLocation={setFilterLocation}
+              locations={locations}
+            />
+
+            {isLoading ? (
+              <div className="text-center py-8">Loading your collection...</div>
+            ) : userCards?.length === 0 ? (
+              <div className="text-center py-8 text-gray-600">
+                Your collection is empty. Visit the Cards page to roll for new cards!
+              </div>
+            ) : (
+              <CardGrid
+                cards={sortedAndFilteredCards}
+                onSellCard={handleSellCard}
+                getManaValue={getManaValue}
+              />
+            )}
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 };
 
