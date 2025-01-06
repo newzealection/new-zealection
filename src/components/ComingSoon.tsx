@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 export const ComingSoon = ({ feature }: { feature: string }) => {
   return (
     <div className="min-h-screen pt-16 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-center">
+      <div className="bg-white/80 backdrop-blur-md p-6 rounded-lg shadow-lg max-w-md w-full text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
