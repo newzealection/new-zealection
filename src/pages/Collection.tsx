@@ -17,7 +17,6 @@ const Collection = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch user's mana with better error handling
   const { data: userMana } = useQuery({
     queryKey: ['userMana'],
     queryFn: async () => {
@@ -67,7 +66,6 @@ const Collection = () => {
     retry: 1,
   });
 
-  // Fetch user's cards
   const { data: userCards, isLoading } = useQuery({
     queryKey: ['userCards'],
     queryFn: async () => {
@@ -108,31 +106,38 @@ const Collection = () => {
       const { error: deleteError } = await supabase
         .from('user_cards')
         .delete()
-        .eq('id', cardId);
+        .eq('id', cardId)
+        .single();
 
       if (deleteError) {
         console.error('Error deleting card:', deleteError);
         throw deleteError;
       }
 
-      // Then update mana using UPDATE instead of UPSERT
+      console.log('Card deleted successfully');
+
+      // Then update mana
       const { error: updateError } = await supabase
         .from('user_mana')
         .update({ 
           mana: userMana + manaValue,
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .single();
 
       if (updateError) {
         console.error('Error updating mana:', updateError);
+        // If mana update fails, we should ideally rollback the card deletion
+        // but that would require a transaction which is not available in the client
         throw updateError;
       }
 
-      console.log('Card sold successfully');
+      console.log('Mana updated successfully');
       return { cardId, manaValue, newManaValue: userMana + manaValue };
     },
     onSuccess: (data) => {
+      // Invalidate both queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
       toast({
@@ -300,6 +305,6 @@ const Collection = () => {
       </div>
     </AuthGuard>
   );
-};
+});
 
 export default Collection;
