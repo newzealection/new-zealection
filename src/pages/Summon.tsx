@@ -5,7 +5,7 @@ const Summon = () => {
   return (
     <div className="min-h-screen relative">
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0"
         style={{
           backgroundImage: 'url(https://i.imghippo.com/files/hRhQ4091yk.png)',
           backgroundSize: 'cover',
@@ -14,7 +14,7 @@ const Summon = () => {
       />
       
       {/* Blur overlay */}
-      <div className="absolute inset-0 backdrop-blur-[2px] bg-black/30 z-[1]" />
+      <div className="absolute inset-0 backdrop-blur-[1px] bg-black/30 z-[1]" />
       
       {/* Content */}
       <div className="relative z-10">
