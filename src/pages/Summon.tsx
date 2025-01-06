@@ -7,7 +7,9 @@ const Summon = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(/lovable-uploads/ceaa5dab-e9a9-42ca-ab33-116b20619c93.png)',
+          backgroundImage: 'url(https://i.imghippo.com/files/hRhQ4091yk.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       />
       
