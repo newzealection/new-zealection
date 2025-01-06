@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Navbar } from '../components/Navbar';
 import { motion } from 'framer-motion';
-import { CollectibleCard } from '@/components/CollectibleCard';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { ManaDisplay } from '@/components/ManaDisplay';
 import { AuthGuard } from '@/components/AuthGuard';
+import { useUserMana } from '@/hooks/useUserMana';
+import { useUserCards } from '@/hooks/useUserCards';
+import { FilterControls } from '@/components/collection/FilterControls';
+import { CardGrid } from '@/components/collection/CardGrid';
 
 const Collection = () => {
   const [sortBy, setSortBy] = useState<'rarity' | 'location' | 'collected'>('rarity');
@@ -17,81 +17,8 @@ const Collection = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: userMana } = useQuery({
-    queryKey: ['userMana'],
-    queryFn: async () => {
-      console.log('Fetching user mana...');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('No user found');
-        throw new Error('User not authenticated');
-      }
-
-      const { data: manaData, error: manaError } = await supabase
-        .from('user_mana')
-        .select('mana')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (manaError) {
-        console.error('Error fetching mana:', manaError);
-        throw manaError;
-      }
-
-      if (!manaData) {
-        console.log('No mana record found, creating new one...');
-        const { data: newManaData, error: createError } = await supabase
-          .from('user_mana')
-          .insert([{ 
-            user_id: user.id, 
-            mana: 0 
-          }])
-          .select('mana')
-          .maybeSingle();
-
-        if (createError) {
-          console.error('Error creating mana record:', createError);
-          throw createError;
-        }
-
-        console.log('New mana record created:', newManaData);
-        return newManaData?.mana || 0;
-      }
-
-      console.log('Existing mana record found:', manaData);
-      return manaData?.mana || 0;
-    },
-    retry: 1,
-  });
-
-  const { data: userCards, isLoading } = useQuery({
-    queryKey: ['userCards'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('user_cards')
-        .select(`
-          id,
-          card_id,
-          collected_at,
-          unique_card_id,
-          cards (
-            id,
-            title,
-            location,
-            image_url,
-            rarity,
-            description
-          )
-        `)
-        .eq('user_id', user.id);
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: userMana } = useUserMana();
+  const { data: userCards, isLoading } = useUserCards();
 
   const sellCardMutation = useMutation({
     mutationFn: async ({ cardId, manaValue }: { cardId: string, manaValue: number }) => {
@@ -243,76 +170,28 @@ const Collection = () => {
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-8">
-              <Select value={sortBy} onValueChange={(value: 'rarity' | 'location' | 'collected') => setSortBy(value)}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Sort by..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rarity">Sort by Rarity</SelectItem>
-                  <SelectItem value="location">Sort by Location</SelectItem>
-                  <SelectItem value="collected">Sort by Collection Date</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filterRarity} onValueChange={setFilterRarity}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filter by rarity..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Rarities</SelectItem>
-                  <SelectItem value="legendary">Legendary</SelectItem>
-                  <SelectItem value="epic">Epic</SelectItem>
-                  <SelectItem value="rare">Rare</SelectItem>
-                  <SelectItem value="common">Common</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filterLocation} onValueChange={setFilterLocation}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filter by location..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {Array.from(locations).map(location => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FilterControls
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              filterRarity={filterRarity}
+              setFilterRarity={setFilterRarity}
+              filterLocation={filterLocation}
+              setFilterLocation={setFilterLocation}
+              locations={locations}
+            />
 
             {isLoading ? (
               <div className="text-center py-8">Loading your collection...</div>
-            ) : sortedAndFilteredCards.length === 0 ? (
+            ) : userCards?.length === 0 ? (
               <div className="text-center py-8 text-gray-600">
-                {userCards?.length === 0 
-                  ? "Your collection is empty. Visit the Cards page to roll for new cards!"
-                  : "No cards match your current filters."}
+                Your collection is empty. Visit the Cards page to roll for new cards!
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {sortedAndFilteredCards.map((userCard) => (
-                  <div key={userCard.unique_card_id} className="relative">
-                    <CollectibleCard
-                      imageUrl={userCard.cards.image_url}
-                      title={userCard.cards.title}
-                      location={userCard.cards.location}
-                      rarity={userCard.cards.rarity}
-                      collectedAt={format(new Date(userCard.collected_at), 'PPP')}
-                      uniqueCardId={userCard.unique_card_id}
-                      description={userCard.cards.description}
-                      showFlip={true}
-                    />
-                    <ManaDisplay
-                      manaValue={getManaValue(userCard.cards.rarity)}
-                      onSell={() => handleSellCard(userCard.id, userCard.cards.rarity)}
-                      cardTitle={userCard.cards.title}
-                    />
-                  </div>
-                ))}
-              </div>
+              <CardGrid
+                cards={sortedAndFilteredCards}
+                onSellCard={handleSellCard}
+                getManaValue={getManaValue}
+              />
             )}
           </motion.div>
         </div>
