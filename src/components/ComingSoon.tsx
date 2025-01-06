@@ -3,12 +3,12 @@ import { motion } from "framer-motion";
 export const ComingSoon = ({ feature }: { feature: string }) => {
   return (
     <div className="min-h-screen pt-16 flex items-center justify-center">
-      <div className="bg-white/30 backdrop-blur-md p-8 rounded-lg max-w-md w-full text-center">
+      <div className="bg-white/20 backdrop-blur-[8px] p-6 rounded-md max-w-md w-full text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col items-center justify-center min-h-[60vh]"
+          className="flex flex-col items-center justify-center"
         >
           <h1 className="text-4xl font-bold text-nzgreen-600 mb-4">{feature}</h1>
           <div className="w-24 h-1 bg-nzgreen-500 rounded mb-8"></div>
