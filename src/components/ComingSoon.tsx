@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export const ComingSoon = ({ feature }: { feature: string }) => {
   return (
-    <div className="min-h-screen pt-16 bg-stone-50">
+    <div className="min-h-screen pt-16">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
