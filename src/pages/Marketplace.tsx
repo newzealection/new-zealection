@@ -1,7 +1,7 @@
 import { ComingSoon } from "@/components/ComingSoon";
 import { Navbar } from "@/components/Navbar";
 
-const Summon = () => {
+const Marketplace = () => {
   return (
     <div className="min-h-screen relative">
       <div 
@@ -21,4 +21,5 @@ const Summon = () => {
     </div>
   );
 };
+
 export default Marketplace;
