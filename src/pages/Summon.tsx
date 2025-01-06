@@ -13,9 +13,6 @@ const Summon = () => {
         }}
       />
       
-      {/* Blur overlay */}
-      <div className="absolute inset-0 backdrop-blur-[1px] bg-black/30 z-[1]" />
-      
       {/* Content */}
       <div className="relative z-10">
         <Navbar />
