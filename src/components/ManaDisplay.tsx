@@ -24,7 +24,7 @@ export const ManaDisplay = ({ manaValue, onSell, cardTitle }: ManaDisplayProps) 
     <>
       <Button
         onClick={() => setShowConfirmDialog(true)}
-        className="absolute top-2 left-2 z-30 bg-black/20 backdrop-blur-sm hover:bg-black/30 text-white border-none flex items-center gap-2 transition-all duration-300"
+        className="absolute top-2 left-4 z-30 bg-black/20 backdrop-blur-sm hover:bg-black/30 text-white border-none flex items-center gap-2 transition-all duration-300"
       >
         <img 
           src="/lovable-uploads/75d6637e-1062-4fd8-b272-34dbb7e63acc.png" 
