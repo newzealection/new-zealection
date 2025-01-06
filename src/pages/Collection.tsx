@@ -27,7 +27,6 @@ const Collection = () => {
         throw new Error('User not authenticated');
       }
 
-      // Try to get existing mana record
       const { data: manaData, error: manaError } = await supabase
         .from('user_mana')
         .select('mana')
@@ -39,7 +38,6 @@ const Collection = () => {
         throw manaError;
       }
 
-      // If no mana record exists, create one
       if (!manaData) {
         console.log('No mana record found, creating new one...');
         const { data: newManaData, error: createError } = await supabase
@@ -95,14 +93,12 @@ const Collection = () => {
     },
   });
 
-  // Updated mutation for selling a card with better error handling
   const sellCardMutation = useMutation({
     mutationFn: async ({ cardId, manaValue }: { cardId: string, manaValue: number }) => {
       console.log('Selling card:', { cardId, manaValue });
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // First, delete the card
       const { error: deleteError } = await supabase
         .from('user_cards')
         .delete()
@@ -116,7 +112,6 @@ const Collection = () => {
 
       console.log('Card deleted successfully');
 
-      // Then update mana
       const { error: updateError } = await supabase
         .from('user_mana')
         .update({ 
@@ -128,8 +123,6 @@ const Collection = () => {
 
       if (updateError) {
         console.error('Error updating mana:', updateError);
-        // If mana update fails, we should ideally rollback the card deletion
-        // but that would require a transaction which is not available in the client
         throw updateError;
       }
 
@@ -137,7 +130,6 @@ const Collection = () => {
       return { cardId, manaValue, newManaValue: userMana + manaValue };
     },
     onSuccess: (data) => {
-      // Invalidate both queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
       toast({
@@ -305,6 +297,6 @@ const Collection = () => {
       </div>
     </AuthGuard>
   );
-});
+};
 
 export default Collection;
