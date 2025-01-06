@@ -99,15 +99,20 @@ const Collection = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { error: deleteError } = await supabase
+      const { data: cardData, error: deleteError } = await supabase
         .from('user_cards')
         .delete()
         .eq('id', cardId)
-        .single();
+        .select()
+        .maybeSingle();
 
       if (deleteError) {
         console.error('Error deleting card:', deleteError);
         throw deleteError;
+      }
+
+      if (!cardData) {
+        throw new Error('Card not found or already sold');
       }
 
       console.log('Card deleted successfully');
@@ -119,7 +124,8 @@ const Collection = () => {
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
-        .single();
+        .select()
+        .maybeSingle();
 
       if (updateError) {
         console.error('Error updating mana:', updateError);
