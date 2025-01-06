@@ -104,37 +104,7 @@ const Collection = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get current mana value first
-      const { data: currentMana, error: manaError } = await supabase
-        .from('user_mana')
-        .select('mana')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (manaError) {
-        console.error('Error fetching current mana:', manaError);
-        throw manaError;
-      }
-
-      const newManaValue = (currentMana?.mana || 0) + manaValue;
-      console.log('Updating mana:', { currentMana: currentMana?.mana, newManaValue });
-
-      // Update mana
-      const { error: updateError } = await supabase
-        .from('user_mana')
-        .upsert({ 
-          user_id: user.id, 
-          mana: newManaValue,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
-
-      if (updateError) {
-        console.error('Error updating mana:', updateError);
-        throw updateError;
-      }
-
-      // Delete the card
+      // First, delete the card
       const { error: deleteError } = await supabase
         .from('user_cards')
         .delete()
@@ -145,8 +115,22 @@ const Collection = () => {
         throw deleteError;
       }
 
+      // Then update mana using UPDATE instead of UPSERT
+      const { error: updateError } = await supabase
+        .from('user_mana')
+        .update({ 
+          mana: userMana + manaValue,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('Error updating mana:', updateError);
+        throw updateError;
+      }
+
       console.log('Card sold successfully');
-      return { cardId, manaValue, newManaValue };
+      return { cardId, manaValue, newManaValue: userMana + manaValue };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
