@@ -6,7 +6,7 @@ const Summon = () => {
     <div 
       className="min-h-screen relative"
       style={{
-        backgroundImage: 'url(/lovable-uploads/ceaa5dab-e9a9-42ca-ab33-116b20619c93.png)',
+        backgroundImage: 'url(https://i.imghippo.com/files/hRhQ4091yk.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
