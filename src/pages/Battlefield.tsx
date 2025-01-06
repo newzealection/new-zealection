@@ -1,7 +1,7 @@
 import { ComingSoon } from "@/components/ComingSoon";
 import { Navbar } from "@/components/Navbar";
 
-const Summon = () => {
+const Battlefield = () => {
   return (
     <div className="min-h-screen relative">
       <div 
