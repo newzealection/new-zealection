@@ -99,25 +99,37 @@ const Collection = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { data: cardData, error: deleteError } = await supabase
+      // First verify the card exists
+      const { data: existingCard, error: checkError } = await supabase
+        .from('user_cards')
+        .select()
+        .eq('id', cardId)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking card:', checkError);
+        throw checkError;
+      }
+
+      if (!existingCard) {
+        throw new Error('Card not found or already sold');
+      }
+
+      // Then delete the card
+      const { error: deleteError } = await supabase
         .from('user_cards')
         .delete()
-        .eq('id', cardId)
-        .select()
-        .maybeSingle();
+        .eq('id', cardId);
 
       if (deleteError) {
         console.error('Error deleting card:', deleteError);
         throw deleteError;
       }
 
-      if (!cardData) {
-        throw new Error('Card not found or already sold');
-      }
-
       console.log('Card deleted successfully');
 
-      const { error: updateError } = await supabase
+      // Then update mana
+      const { data: updatedMana, error: updateError } = await supabase
         .from('user_mana')
         .update({ 
           mana: userMana + manaValue,
@@ -130,6 +142,10 @@ const Collection = () => {
       if (updateError) {
         console.error('Error updating mana:', updateError);
         throw updateError;
+      }
+
+      if (!updatedMana) {
+        throw new Error('Failed to update mana balance');
       }
 
       console.log('Mana updated successfully');
