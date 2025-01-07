@@ -167,6 +167,13 @@ export type Database = {
             }
             Returns: string
           }
+      sell_card: {
+        Args: {
+          p_card_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       card_rarity: "common" | "rare" | "epic" | "legendary"
