@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Home, User, GalleryHorizontalEnd, Library, Menu, X, Zap, store, Flag } from "lucide-react";
+import { Home, User, GalleryHorizontalEnd, Library, Menu, X, Zap, ShoppingBag, Flag } from "lucide-react";
 import { useState } from "react";
 
 export const Navbar = () => {
@@ -62,7 +62,7 @@ export const Navbar = () => {
               to="/marketplace"
               className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
             >
-              <store className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4" />
               <span>Marketplace</span>
             </Link>
 
@@ -136,7 +136,7 @@ export const Navbar = () => {
               className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
               onClick={() => setIsMenuOpen(false)}
             >
-              <store className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4" />
               <span>Marketplace</span>
             </Link>
 
