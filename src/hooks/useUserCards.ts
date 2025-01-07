@@ -15,6 +15,7 @@ export const useUserCards = () => {
           card_id,
           collected_at,
           unique_card_id,
+          mana_value,
           cards (
             id,
             title,
