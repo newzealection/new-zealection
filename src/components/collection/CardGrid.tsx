@@ -4,8 +4,8 @@ import { ManaDisplay } from '@/components/ManaDisplay';
 
 interface CardGridProps {
   cards: any[];
-  onSellCard: (cardId: string, rarity: string) => void;
-  getManaValue: (rarity: string) => number;
+  onSellCard: (cardId: string) => void;
+  getManaValue: (card: any) => number;
 }
 
 export const CardGrid = ({ cards, onSellCard, getManaValue }: CardGridProps) => {
@@ -32,8 +32,8 @@ export const CardGrid = ({ cards, onSellCard, getManaValue }: CardGridProps) => 
             showFlip={true}
           />
           <ManaDisplay
-            manaValue={getManaValue(userCard.cards.rarity)}
-            onSell={() => onSellCard(userCard.id, userCard.cards.rarity)}
+            manaValue={getManaValue(userCard)}
+            onSell={() => onSellCard(userCard.id)}
             cardTitle={userCard.cards.title}
           />
         </div>

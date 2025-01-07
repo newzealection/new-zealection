@@ -26,10 +26,10 @@ const Collection = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // First verify the card exists
+      // First verify the card exists and get its mana value
       const { data: existingCard, error: checkError } = await supabase
         .from('user_cards')
-        .select()
+        .select('mana_value')
         .eq('id', cardId)
         .maybeSingle();
 
@@ -59,7 +59,7 @@ const Collection = () => {
       const { data: updatedMana, error: updateError } = await supabase
         .from('user_mana')
         .update({ 
-          mana: userMana + manaValue,
+          mana: userMana + existingCard.mana_value,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -76,7 +76,7 @@ const Collection = () => {
       }
 
       console.log('Mana updated successfully');
-      return { cardId, manaValue, newManaValue: userMana + manaValue };
+      return { cardId, manaValue: existingCard.mana_value, newManaValue: userMana + existingCard.mana_value };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
@@ -96,19 +96,8 @@ const Collection = () => {
     },
   });
 
-  const getManaValue = (rarity: string): number => {
-    const manaValues = {
-      legendary: 500,
-      epic: 400,
-      rare: 300,
-      common: 100,
-    };
-    return manaValues[rarity as keyof typeof manaValues] || 0;
-  };
-
-  const handleSellCard = (cardId: string, rarity: string) => {
-    const manaValue = getManaValue(rarity);
-    sellCardMutation.mutate({ cardId, manaValue });
+  const handleSellCard = (cardId: string) => {
+    sellCardMutation.mutate({ cardId, manaValue: 0 }); // manaValue is not used anymore as it comes from the database
   };
 
   const sortedAndFilteredCards = useMemo(() => {
@@ -190,7 +179,7 @@ const Collection = () => {
               <CardGrid
                 cards={sortedAndFilteredCards}
                 onSellCard={handleSellCard}
-                getManaValue={getManaValue}
+                getManaValue={(card) => card.mana_value}
               />
             )}
           </motion.div>

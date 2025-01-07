@@ -72,6 +72,7 @@ export type Database = {
           collected_at: string
           id: string
           last_roll_at: string
+          mana_value: number
           unique_card_id: string
           user_id: string
         }
@@ -80,6 +81,7 @@ export type Database = {
           collected_at?: string
           id?: string
           last_roll_at?: string
+          mana_value?: number
           unique_card_id?: string
           user_id: string
         }
@@ -88,6 +90,7 @@ export type Database = {
           collected_at?: string
           id?: string
           last_roll_at?: string
+          mana_value?: number
           unique_card_id?: string
           user_id?: string
         }
