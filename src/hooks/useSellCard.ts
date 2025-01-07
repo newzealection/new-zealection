@@ -28,41 +28,24 @@ export const useSellCard = (userMana: number | undefined) => {
         throw new Error('Card not found or already sold');
       }
 
-      // Then delete the card
-      const { error: deleteError } = await supabase
-        .from('user_cards')
-        .delete()
-        .eq('id', cardId);
+      // Then delete the card and update mana in a single transaction using RPC
+      const { data: result, error: rpcError } = await supabase
+        .rpc('sell_card', { 
+          p_card_id: cardId,
+          p_user_id: user.id
+        });
 
-      if (deleteError) {
-        console.error('Error deleting card:', deleteError);
-        throw deleteError;
+      if (rpcError) {
+        console.error('Error in sell_card transaction:', rpcError);
+        throw rpcError;
       }
 
-      console.log('Card deleted successfully');
-
-      // Then update mana
-      const { data: updatedMana, error: updateError } = await supabase
-        .from('user_mana')
-        .update({ 
-          mana: (userMana || 0) + existingCard.mana_value,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-        .select()
-        .maybeSingle();
-
-      if (updateError) {
-        console.error('Error updating mana:', updateError);
-        throw updateError;
-      }
-
-      if (!updatedMana) {
-        throw new Error('Failed to update mana balance');
-      }
-
-      console.log('Mana updated successfully');
-      return { cardId, manaValue: existingCard.mana_value, newManaValue: (userMana || 0) + existingCard.mana_value };
+      console.log('Card sold successfully:', result);
+      return { 
+        cardId, 
+        manaValue: existingCard.mana_value, 
+        newManaValue: (userMana || 0) + existingCard.mana_value 
+      };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
