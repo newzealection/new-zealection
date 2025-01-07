@@ -31,10 +31,10 @@ export const useSellCard = (userMana: number | undefined) => {
 
       console.log('Found card with mana value:', existingCard.mana_value);
 
-      // Call the sell_card function
+      // Call the sell_card function with the correct parameter name
       const { data: result, error: rpcError } = await supabase
         .rpc('sell_card', { 
-          p_card_id: cardId,
+          p_unique_card_id: cardId,
           p_user_id: user.id
         });
 
