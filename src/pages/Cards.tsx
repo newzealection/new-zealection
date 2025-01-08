@@ -42,9 +42,18 @@ const Cards = () => {
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
-          *,
-          cards (*),
-          profiles:user_id (email)
+          id,
+          card_id,
+          collected_at,
+          unique_card_id,
+          cards (
+            id,
+            title,
+            location,
+            image_url,
+            rarity,
+            description
+          )
         `)
         .eq('user_id', user.id)  // Filter by current user
         .order('collected_at', { ascending: false })
@@ -168,7 +177,6 @@ const Cards = () => {
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
                   uniqueCardId={userCard.unique_card_id}
-                  userName={userCard.profiles?.email}
                 />
               ))}
             </div>
