@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/Navbar";
+import { AuthError } from "@supabase/supabase-js";
 
 export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
     // Check current auth status
@@ -38,8 +40,29 @@ export default function Login() {
           title: "Welcome!",
           description: "You have successfully logged in.",
         });
+      } else if (event === "USER_UPDATED" && !session) {
+        setErrorMessage("Invalid login credentials. Please try again.");
       }
     });
+
+    // Handle auth errors
+    const handleAuthError = (error: AuthError) => {
+      console.error("Auth error:", error);
+      let message = "An error occurred during login. Please try again.";
+      
+      if (error.message.includes("Invalid login credentials")) {
+        message = "Invalid email or password. Please check your credentials and try again.";
+      } else if (error.message.includes("Email not confirmed")) {
+        message = "Please verify your email address before signing in.";
+      }
+      
+      setErrorMessage(message);
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: message,
+      });
+    };
 
     checkUser();
 
@@ -67,6 +90,11 @@ export default function Login() {
               Sign in to start collecting New Zealand's finest locations
             </p>
           </div>
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{errorMessage}</span>
+            </div>
+          )}
           <div className="mt-8">
             <Auth
               supabaseClient={supabase}
