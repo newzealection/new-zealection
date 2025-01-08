@@ -30,7 +30,7 @@ export default function Login() {
     // Set up auth state listener
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       
       if (event === "SIGNED_IN" && session) {
@@ -40,29 +40,15 @@ export default function Login() {
           title: "Welcome!",
           description: "You have successfully logged in.",
         });
-      } else if (event === "USER_UPDATED" && !session) {
-        setErrorMessage("Invalid login credentials. Please try again.");
+      } else if (event === "SIGN_IN_WITH_PASSWORD" && !session) {
+        setErrorMessage("Invalid email or password. Please check your credentials and try again.");
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Invalid email or password. Please check your credentials and try again.",
+        });
       }
     });
-
-    // Handle auth errors
-    const handleAuthError = (error: AuthError) => {
-      console.error("Auth error:", error);
-      let message = "An error occurred during login. Please try again.";
-      
-      if (error.message.includes("Invalid login credentials")) {
-        message = "Invalid email or password. Please check your credentials and try again.";
-      } else if (error.message.includes("Email not confirmed")) {
-        message = "Please verify your email address before signing in.";
-      }
-      
-      setErrorMessage(message);
-      toast({
-        variant: "destructive",
-        title: "Authentication Error",
-        description: message,
-      });
-    };
 
     checkUser();
 
