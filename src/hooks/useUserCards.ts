@@ -25,7 +25,7 @@ export const useUserCards = () => {
             description
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id);  // Filter by current user
       
       if (error) throw error;
       return data;
