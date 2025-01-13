@@ -15,6 +15,7 @@ export default function Login() {
   useEffect(() => {
     // Check current auth status
     const checkUser = async () => {
+      console.log("Checking current user session...");
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
