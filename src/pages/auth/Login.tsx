@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/Navbar";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ export default function Login() {
           return "Please check your login details and try again.";
         case 422:
           return "Invalid email format. Please enter a valid email address.";
+        case 429:
+          return "Too many login attempts. Please try again later.";
         default:
           return error.message;
       }
@@ -32,8 +35,7 @@ export default function Login() {
   };
 
   useEffect(() => {
-    // Check current auth status
-    const checkUser = async () => {
+    const checkSession = async () => {
       console.log("Checking current user session...");
       const { data: { session }, error } = await supabase.auth.getSession();
       
@@ -53,7 +55,8 @@ export default function Login() {
       }
     };
 
-    // Set up auth state listener
+    checkSession();
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -67,6 +70,7 @@ export default function Login() {
           description: "You have successfully logged in.",
         });
       } else if (event === "SIGNED_OUT") {
+        console.log("User signed out");
         setErrorMessage("");
       } else if (event === "PASSWORD_RECOVERY") {
         setErrorMessage("Please check your email for password reset instructions.");
@@ -75,6 +79,7 @@ export default function Login() {
           description: "Please check your email for password reset instructions.",
         });
       } else if (event === "USER_UPDATED") {
+        console.log("User updated, checking session");
         const { error } = await supabase.auth.getSession();
         if (error) {
           console.error("Auth error:", error);
@@ -88,9 +93,6 @@ export default function Login() {
       }
     });
 
-    checkUser();
-
-    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
@@ -114,11 +116,13 @@ export default function Login() {
               Sign in to start collecting New Zealand's finest locations
             </p>
           </div>
+          
           {errorMessage && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">{errorMessage}</span>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
           )}
+
           <div className="mt-8">
             <Auth
               supabaseClient={supabase}
@@ -135,6 +139,22 @@ export default function Login() {
               }}
               providers={[]}
               redirectTo={`${window.location.origin}/auth/callback`}
+              localization={{
+                variables: {
+                  sign_in: {
+                    email_label: 'Email address',
+                    password_label: 'Password',
+                    button_label: 'Sign in',
+                    loading_button_label: 'Signing in...',
+                  },
+                  sign_up: {
+                    email_label: 'Email address',
+                    password_label: 'Create a password',
+                    button_label: 'Sign up',
+                    loading_button_label: 'Signing up...',
+                  },
+                },
+              }}
             />
           </div>
         </div>
