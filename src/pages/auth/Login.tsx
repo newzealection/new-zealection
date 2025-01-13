@@ -14,7 +14,7 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const getErrorMessage = (error: AuthError) => {
-    console.error("Authentication error:", error);
+    console.error("Authentication error details:", error);
     
     if (error instanceof AuthApiError) {
       switch (error.status) {
@@ -22,36 +22,50 @@ export default function Login() {
           if (error.message.includes("invalid_credentials")) {
             return "Invalid email or password. Please check your credentials and try again.";
           }
+          if (error.message.includes("Email not confirmed")) {
+            return "Please verify your email address before signing in.";
+          }
           return "Please check your login details and try again.";
         case 422:
           return "Invalid email format. Please enter a valid email address.";
         case 429:
           return "Too many login attempts. Please try again later.";
         default:
-          return error.message;
+          return `Authentication error: ${error.message}`;
       }
     }
     return "An unexpected error occurred. Please try again.";
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const checkSession = async () => {
-      console.log("Checking current user session...");
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Error checking session:", error);
-        setErrorMessage(getErrorMessage(error));
-        return;
-      }
-      
-      if (session?.user) {
-        console.log("User is already logged in, redirecting to home");
-        navigate("/");
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
-        });
+      try {
+        console.log("Checking current user session...");
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error checking session:", error);
+          if (mounted) {
+            setErrorMessage(getErrorMessage(error));
+          }
+          return;
+        }
+        
+        if (session?.user && mounted) {
+          console.log("User is already logged in, redirecting to home");
+          navigate("/");
+          toast({
+            title: "Welcome back!",
+            description: "You have successfully logged in.",
+          });
+        }
+      } catch (error) {
+        console.error("Unexpected error during session check:", error);
+        if (mounted && error instanceof AuthError) {
+          setErrorMessage(getErrorMessage(error));
+        }
       }
     };
 
@@ -62,23 +76,23 @@ export default function Login() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       
-      if (event === "SIGNED_IN" && session) {
-        console.log("User signed in, redirecting to home");
+      if (event === "SIGNED_IN" && session && mounted) {
+        console.log("User signed in successfully, redirecting to home");
         navigate("/");
         toast({
           title: "Welcome!",
           description: "You have successfully logged in.",
         });
-      } else if (event === "SIGNED_OUT") {
+      } else if (event === "SIGNED_OUT" && mounted) {
         console.log("User signed out");
         setErrorMessage("");
-      } else if (event === "PASSWORD_RECOVERY") {
+      } else if (event === "PASSWORD_RECOVERY" && mounted) {
         setErrorMessage("Please check your email for password reset instructions.");
         toast({
           title: "Password Recovery",
           description: "Please check your email for password reset instructions.",
         });
-      } else if (event === "USER_UPDATED") {
+      } else if (event === "USER_UPDATED" && mounted) {
         console.log("User updated, checking session");
         const { error } = await supabase.auth.getSession();
         if (error) {
@@ -94,6 +108,7 @@ export default function Login() {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate, toast]);
