@@ -104,6 +104,15 @@ export default function Login() {
               }}
               providers={[]}
               redirectTo={`${window.location.origin}/auth/callback`}
+              onError={(error) => {
+                console.error("Auth error:", error);
+                setErrorMessage(error.message);
+                toast({
+                  variant: "destructive",
+                  title: "Authentication Error",
+                  description: error.message,
+                });
+              }}
             />
           </div>
         </div>
