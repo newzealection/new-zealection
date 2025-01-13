@@ -17,37 +17,15 @@ export default function Login() {
     console.error("Authentication error details:", error);
     
     if (error instanceof AuthApiError) {
-      try {
-        // Handle both string and object error messages
-        let errorData;
-        if (typeof error.message === 'string') {
-          try {
-            errorData = JSON.parse(error.message);
-          } catch {
-            errorData = { code: 'unknown', message: error.message };
-          }
-        } else {
-          errorData = error.message;
-        }
-        
-        const errorCode = errorData?.code;
-        
-        switch (errorCode) {
-          case "invalid_credentials":
-            return "Invalid email or password. Please check your credentials and try again.";
-          case "email_not_confirmed":
-            return "Please verify your email address before signing in.";
-          case "invalid_grant":
-            return "Invalid login credentials. Please check your email and password.";
-          case "too_many_requests":
-            return "Too many login attempts. Please try again later.";
-          default:
-            // If we can't determine the specific error, provide a generic message
-            return "Unable to sign in. Please check your credentials and try again.";
-        }
-      } catch (parseError) {
-        console.error("Error handling authentication error:", parseError);
-        return "An unexpected error occurred. Please try again.";
+      switch (error.status) {
+        case 400:
+          return "Invalid email or password. Please check your credentials and try again.";
+        case 422:
+          return "Please provide both email and password.";
+        case 429:
+          return "Too many login attempts. Please try again later.";
+        default:
+          return "An error occurred during login. Please try again.";
       }
     }
     return "An unexpected error occurred. Please try again.";
@@ -88,7 +66,7 @@ export default function Login() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+      console.log("Auth state changed:", event, "for user:", session?.user);
       
       if (event === "SIGNED_IN" && session && mounted) {
         console.log("User signed in successfully, redirecting to home");
@@ -100,12 +78,6 @@ export default function Login() {
       } else if (event === "SIGNED_OUT" && mounted) {
         console.log("User signed out");
         setErrorMessage("");
-      } else if (event === "PASSWORD_RECOVERY" && mounted) {
-        setErrorMessage("Please check your email for password reset instructions.");
-        toast({
-          title: "Password Recovery",
-          description: "Please check your email for password reset instructions.",
-        });
       }
     });
 
