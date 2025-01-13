@@ -11,6 +11,8 @@ import Callback from "./pages/auth/Callback";
 import { AuthGuard } from "./components/AuthGuard";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { supabase } from "./integrations/supabase/client";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -22,9 +24,30 @@ const queryClient = new QueryClient({
   },
 });
 
+// Create a wrapper component to handle auth state changes
+const QueryInvalidator = () => {
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      console.log("Auth state changed in QueryInvalidator:", event);
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        console.log("Invalidating queries due to auth state change");
+        // Invalidate all queries when auth state changes
+        queryClient.invalidateQueries();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  return null;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <QueryInvalidator />
       <Router>
         <Routes>
           <Route path="/" element={<Index />} />
