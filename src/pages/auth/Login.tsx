@@ -17,18 +17,16 @@ export default function Login() {
     console.error("Authentication error details:", error);
     
     if (error instanceof AuthApiError) {
-      switch (error.status) {
-        case 400:
-          if (error.message.includes("invalid_credentials")) {
-            return "Invalid email or password. Please check your credentials and try again.";
-          }
-          if (error.message.includes("Email not confirmed")) {
-            return "Please verify your email address before signing in.";
-          }
-          return "Please check your login details and try again.";
-        case 422:
-          return "Invalid email format. Please enter a valid email address.";
-        case 429:
+      // Check the specific error code from the API
+      const errorCode = JSON.parse(error.message).code;
+      switch (errorCode) {
+        case "invalid_credentials":
+          return "Invalid email or password. Please check your credentials and try again.";
+        case "email_not_confirmed":
+          return "Please verify your email address before signing in.";
+        case "invalid_grant":
+          return "Invalid login credentials. Please check your email and password.";
+        case "too_many_requests":
           return "Too many login attempts. Please try again later.";
         default:
           return `Authentication error: ${error.message}`;
@@ -69,8 +67,6 @@ export default function Login() {
       }
     };
 
-    checkSession();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -106,6 +102,8 @@ export default function Login() {
         }
       }
     });
+
+    checkSession();
 
     return () => {
       mounted = false;
