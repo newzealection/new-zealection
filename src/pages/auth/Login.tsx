@@ -5,12 +5,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/Navbar";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const getErrorMessage = (error: AuthError) => {
+    console.error("Authentication error:", error);
+    
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          if (error.message.includes("invalid_credentials")) {
+            return "Invalid email or password. Please check your credentials and try again.";
+          }
+          return "Please check your login details and try again.";
+        case 422:
+          return "Invalid email format. Please enter a valid email address.";
+        default:
+          return error.message;
+      }
+    }
+    return "An unexpected error occurred. Please try again.";
+  };
 
   useEffect(() => {
     // Check current auth status
@@ -20,7 +39,7 @@ export default function Login() {
       
       if (error) {
         console.error("Error checking session:", error);
-        setErrorMessage(error.message);
+        setErrorMessage(getErrorMessage(error));
         return;
       }
       
@@ -59,11 +78,11 @@ export default function Login() {
         const { error } = await supabase.auth.getSession();
         if (error) {
           console.error("Auth error:", error);
-          setErrorMessage(error.message);
+          setErrorMessage(getErrorMessage(error));
           toast({
             variant: "destructive",
             title: "Authentication Error",
-            description: error.message,
+            description: getErrorMessage(error),
           });
         }
       }
