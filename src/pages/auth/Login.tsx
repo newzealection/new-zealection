@@ -40,7 +40,7 @@ export default function Login() {
           title: "Welcome!",
           description: "You have successfully logged in.",
         });
-      } else if (event === "SIGN_IN_WITH_PASSWORD" && !session) {
+      } else if (event === "PASSWORD_RECOVERY" && !session) {
         setErrorMessage("Invalid email or password. Please check your credentials and try again.");
         toast({
           variant: "destructive",
