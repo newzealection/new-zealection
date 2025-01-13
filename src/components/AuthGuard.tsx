@@ -24,10 +24,6 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
           throw error;
         }
 
-        if (session) {
-          console.log("AuthGuard: Session found for user:", session.user.id);
-        }
-
         if (!session && mounted) {
           console.log("AuthGuard: No session found, redirecting to login");
           toast({
@@ -52,13 +48,13 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("AuthGuard: Auth state changed:", event, "for user:", session?.user?.id);
+      console.log("AuthGuard: Auth state changed:", event);
       
       if (event === "SIGNED_OUT" && mounted) {
         console.log("AuthGuard: User signed out, redirecting to login");
         navigate("/auth/login");
       } else if (event === "TOKEN_REFRESHED") {
-        console.log("AuthGuard: Token refreshed for user:", session?.user?.id);
+        console.log("AuthGuard: Token refreshed");
       }
     });
 
