@@ -17,19 +17,27 @@ export default function Login() {
     console.error("Authentication error details:", error);
     
     if (error instanceof AuthApiError) {
-      // Check the specific error code from the API
-      const errorCode = JSON.parse(error.message).code;
-      switch (errorCode) {
-        case "invalid_credentials":
-          return "Invalid email or password. Please check your credentials and try again.";
-        case "email_not_confirmed":
-          return "Please verify your email address before signing in.";
-        case "invalid_grant":
-          return "Invalid login credentials. Please check your email and password.";
-        case "too_many_requests":
-          return "Too many login attempts. Please try again later.";
-        default:
-          return `Authentication error: ${error.message}`;
+      try {
+        // Safely parse the error message as it might not always be JSON
+        const errorData = typeof error.message === 'string' ? JSON.parse(error.message) : error.message;
+        const errorCode = errorData?.code;
+        
+        switch (errorCode) {
+          case "invalid_credentials":
+            return "Invalid email or password. Please check your credentials and try again.";
+          case "email_not_confirmed":
+            return "Please verify your email address before signing in.";
+          case "invalid_grant":
+            return "Invalid login credentials. Please check your email and password.";
+          case "too_many_requests":
+            return "Too many login attempts. Please try again later.";
+          default:
+            // If we can't determine the specific error, provide a generic message
+            return "Unable to sign in. Please check your credentials and try again.";
+        }
+      } catch (parseError) {
+        console.error("Error parsing authentication error:", parseError);
+        return "An unexpected error occurred. Please try again.";
       }
     }
     return "An unexpected error occurred. Please try again.";
@@ -88,18 +96,6 @@ export default function Login() {
           title: "Password Recovery",
           description: "Please check your email for password reset instructions.",
         });
-      } else if (event === "USER_UPDATED" && mounted) {
-        console.log("User updated, checking session");
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Auth error:", error);
-          setErrorMessage(getErrorMessage(error));
-          toast({
-            variant: "destructive",
-            title: "Authentication Error",
-            description: getErrorMessage(error),
-          });
-        }
       }
     });
 
