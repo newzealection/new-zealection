@@ -15,7 +15,13 @@ export default function Login() {
   useEffect(() => {
     // Check current auth status
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Error checking session:", error);
+        setErrorMessage(error.message);
+        return;
+      }
       
       if (session?.user) {
         console.log("User is already logged in, redirecting to home");
@@ -42,12 +48,11 @@ export default function Login() {
         });
       } else if (event === "SIGNED_OUT") {
         setErrorMessage("");
-      } else if (event === "SIGN_IN_WITH_PASSWORD" && !session) {
-        setErrorMessage("Invalid email or password. Please check your credentials and try again.");
+      } else if (event === "PASSWORD_RECOVERY") {
+        setErrorMessage("Please check your email for password reset instructions.");
         toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "Invalid email or password. Please check your credentials and try again.",
+          title: "Password Recovery",
+          description: "Please check your email for password reset instructions.",
         });
       }
     });
