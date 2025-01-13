@@ -54,6 +54,17 @@ export default function Login() {
           title: "Password Recovery",
           description: "Please check your email for password reset instructions.",
         });
+      } else if (event === "USER_UPDATED") {
+        const { error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Auth error:", error);
+          setErrorMessage(error.message);
+          toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: error.message,
+          });
+        }
       }
     });
 
@@ -104,15 +115,6 @@ export default function Login() {
               }}
               providers={[]}
               redirectTo={`${window.location.origin}/auth/callback`}
-              onError={(error) => {
-                console.error("Auth error:", error);
-                setErrorMessage(error.message);
-                toast({
-                  variant: "destructive",
-                  title: "Authentication Error",
-                  description: error.message,
-                });
-              }}
             />
           </div>
         </div>
