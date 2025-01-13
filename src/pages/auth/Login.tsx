@@ -18,8 +18,18 @@ export default function Login() {
     
     if (error instanceof AuthApiError) {
       try {
-        // Safely parse the error message as it might not always be JSON
-        const errorData = typeof error.message === 'string' ? JSON.parse(error.message) : error.message;
+        // Handle both string and object error messages
+        let errorData;
+        if (typeof error.message === 'string') {
+          try {
+            errorData = JSON.parse(error.message);
+          } catch {
+            errorData = { code: 'unknown', message: error.message };
+          }
+        } else {
+          errorData = error.message;
+        }
+        
         const errorCode = errorData?.code;
         
         switch (errorCode) {
@@ -36,7 +46,7 @@ export default function Login() {
             return "Unable to sign in. Please check your credentials and try again.";
         }
       } catch (parseError) {
-        console.error("Error parsing authentication error:", parseError);
+        console.error("Error handling authentication error:", parseError);
         return "An unexpected error occurred. Please try again.";
       }
     }
