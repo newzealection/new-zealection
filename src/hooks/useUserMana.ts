@@ -8,10 +8,11 @@ export const useUserMana = () => {
       console.log('Fetching user mana...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('No user found');
+        console.error('No user found when fetching mana');
         throw new Error('User not authenticated');
       }
 
+      console.log('Fetching mana for user:', user.id);
       const { data: manaData, error: manaError } = await supabase
         .from('user_mana')
         .select('mana')
@@ -24,7 +25,7 @@ export const useUserMana = () => {
       }
 
       if (!manaData) {
-        console.log('No mana record found, creating new one...');
+        console.log('No mana record found for user:', user.id, 'creating new one...');
         const { data: newManaData, error: createError } = await supabase
           .from('user_mana')
           .insert([{ 
@@ -39,11 +40,11 @@ export const useUserMana = () => {
           throw createError;
         }
 
-        console.log('New mana record created:', newManaData);
+        console.log('New mana record created for user:', user.id);
         return newManaData?.mana || 0;
       }
 
-      console.log('Existing mana record found:', manaData);
+      console.log('Existing mana record found for user:', user.id, 'mana:', manaData.mana);
       return manaData?.mana || 0;
     },
     retry: 1,

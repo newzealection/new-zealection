@@ -5,9 +5,14 @@ export const useUserCards = () => {
   return useQuery({
     queryKey: ['userCards'],
     queryFn: async () => {
+      console.log('Fetching user cards...');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('No authenticated user found');
+        throw new Error('User not authenticated');
+      }
 
+      console.log('Fetching cards for user:', user.id);
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
@@ -25,9 +30,14 @@ export const useUserCards = () => {
             description
           )
         `)
-        .eq('user_id', user.id);  // Filter by current user
+        .eq('user_id', user.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user cards:', error);
+        throw error;
+      }
+
+      console.log(`Found ${data?.length || 0} cards for user:`, user.id);
       return data;
     },
   });
