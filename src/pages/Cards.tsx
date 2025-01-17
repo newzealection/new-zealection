@@ -32,30 +32,15 @@ const Cards = () => {
     },
   });
 
-  // Query recent cards with user information
   const { data: recentCards } = useQuery({
     queryKey: ['recentCards'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
       const { data, error } = await supabase
-        .from('user_cards')
+        .from('user_cards_with_profiles')
         .select(`
-          id,
-          card_id,
-          collected_at,
-          unique_card_id,
-          cards (
-            id,
-            title,
-            location,
-            image_url,
-            rarity,
-            description
-          )
+          *,
+          cards:card_id (*)
         `)
-        .eq('user_id', user.id)  // Filter by current user
         .order('collected_at', { ascending: false })
         .limit(3);
       
@@ -166,7 +151,7 @@ const Cards = () => {
           </Button>
 
           <div className="mt-16">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-8">Your Recently Collected Cards</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-8">Recently Collected Cards</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recentCards?.map((userCard) => (
                 <CollectibleCard
@@ -177,6 +162,7 @@ const Cards = () => {
                   rarity={userCard.cards.rarity}
                   collectedAt={format(new Date(userCard.collected_at), 'PPP')}
                   uniqueCardId={userCard.unique_card_id}
+                  userName={userCard.user_email}
                 />
               ))}
             </div>
@@ -185,6 +171,9 @@ const Cards = () => {
       </div>
     </div>
   );
+};
+
+export default Cards;
 };
 
 export default Cards;
