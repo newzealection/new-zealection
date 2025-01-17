@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      card_sale_transactions: {
+        Row: {
+          card_id: string
+          id: string
+          mana_value: number
+          sold_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          id?: string
+          mana_value: number
+          sold_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          id?: string
+          mana_value?: number
+          sold_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cards: {
         Row: {
           card_code: string
@@ -167,6 +194,13 @@ export type Database = {
             }
             Returns: string
           }
+      sell_card: {
+        Args: {
+          p_card_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       card_rarity: "common" | "rare" | "epic" | "legendary"

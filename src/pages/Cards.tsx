@@ -13,6 +13,7 @@ const Cards = () => {
   const [isRolling, setIsRolling] = useState(false);
   const [countdown, setCountdown] = useState('Roll Now!');
 
+  // Query user's last roll time
   const { data: lastRoll, refetch: refetchLastRoll } = useQuery({
     queryKey: ['lastRoll'],
     queryFn: async () => {

@@ -12,6 +12,7 @@ export const useUserMana = () => {
         throw new Error('User not authenticated');
       }
 
+      console.log('Fetching mana for user:', user.id);
       const { data: manaData, error: manaError } = await supabase
         .from('user_mana')
         .select('mana')
@@ -46,6 +47,7 @@ export const useUserMana = () => {
       console.log('Existing mana record found:', manaData);
       return manaData?.mana || 0;
     },
+    enabled: true, // Query will run as soon as component mounts
     retry: 1,
   });
 };
