@@ -12,6 +12,8 @@ export const useSellCard = (userMana: number | undefined) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      console.log('Authenticated user:', user.id);
+
       // Call the sell_card database function
       const { data, error } = await supabase
         .rpc('sell_card', {
