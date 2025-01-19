@@ -12,61 +12,31 @@ export const useSellCard = (userMana: number | undefined) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get the card details first
-      const { data: cardData, error: cardError } = await supabase
-        .from('user_cards')
-        .select('mana_value')
-        .eq('id', cardId)
-        .single();
+      // Call the sell_card database function
+      const { data, error } = await supabase
+        .rpc('sell_card', {
+          p_card_id: cardId,
+          p_user_id: user.id
+        });
 
-      if (cardError) {
-        console.error('Error getting card details:', cardError);
-        throw cardError;
+      if (error) {
+        console.error('Error selling card:', error);
+        throw error;
       }
 
-      if (!cardData) {
-        throw new Error('Card not found');
+      if (!data) {
+        throw new Error('Failed to sell card');
       }
 
-      // Delete the card using its ID
-      const { error: deleteError } = await supabase
-        .from('user_cards')
-        .delete()
-        .eq('id', cardId)
-        .eq('user_id', user.id);
-
-      if (deleteError) {
-        console.error('Error deleting card:', deleteError);
-        throw deleteError;
-      }
-
-      // Update user's mana
-      const { error: manaError } = await supabase
-        .from('user_mana')
-        .update({ 
-          mana: (userMana || 0) + cardData.mana_value,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
-
-      if (manaError) {
-        console.error('Error updating mana:', manaError);
-        throw manaError;
-      }
-
-      return { 
-        cardId, 
-        manaValue: cardData.mana_value, 
-        newManaValue: (userMana || 0) + cardData.mana_value
-      };
+      return { success: true };
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalidate both queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
       toast({
         title: "Card sold successfully!",
-        description: `You received ${data.manaValue} mana. New balance: ${data.newManaValue} mana.`,
+        description: "The card has been removed from your collection and you received mana.",
       });
     },
     onError: (error: Error) => {
