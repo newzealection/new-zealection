@@ -31,7 +31,7 @@ export const useSellCard = (userMana: number | undefined) => {
       // Then delete the card and update mana in a single transaction using RPC
       const { data: result, error: rpcError } = await supabase
         .rpc('sell_card', { 
-          p_card_id: cardId,
+          p_user_card_id: cardId,
           p_user_id: user.id
         });
 
