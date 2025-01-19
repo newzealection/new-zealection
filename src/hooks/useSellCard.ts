@@ -16,7 +16,7 @@ export const useSellCard = (userMana: number | undefined) => {
       const { data: cardData, error: cardError } = await supabase
         .from('user_cards')
         .select('mana_value')
-        .eq('card_id', cardId)
+        .eq('id', cardId)
         .eq('user_id', user.id)
         .single();
 
