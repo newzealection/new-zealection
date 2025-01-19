@@ -33,11 +33,11 @@ export const useSellCard = (userMana: number | undefined) => {
       }
 
       console.log('Card verified:', cardData);
-      console.log('Calling sell_card function with:', { p_card_id: cardData.card_id, p_user_id: user.id });
+      console.log('Calling sell_card function with:', { p_card_id: cardId, p_user_id: user.id });
 
       const { data, error } = await supabase
         .rpc('sell_card', {
-          p_card_id: cardData.card_id,
+          p_card_id: cardId,
           p_user_id: user.id
         });
 
