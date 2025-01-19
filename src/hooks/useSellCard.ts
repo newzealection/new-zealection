@@ -32,7 +32,8 @@ export const useSellCard = (userMana: number | undefined) => {
       const { error: deleteError } = await supabase
         .from('user_cards')
         .delete()
-        .eq('id', cardId);
+        .eq('id', cardId)
+        .eq('user_id', user.id);
 
       if (deleteError) {
         console.error('Error deleting card:', deleteError);
@@ -60,6 +61,7 @@ export const useSellCard = (userMana: number | undefined) => {
       };
     },
     onSuccess: (data) => {
+      // Invalidate both queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
       toast({
