@@ -12,30 +12,52 @@ export const useSellCard = (userMana: number | undefined) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Call the sell_card function directly with the user_cards.id
-      const { data: result, error: rpcError } = await supabase
-        .rpc('sell_card', { 
-          p_card_id: cardId,
-          p_user_id: user.id
-        });
-
-      if (rpcError) {
-        console.error('Error in sell_card transaction:', rpcError);
-        throw rpcError;
-      }
-
-      // Get the mana value for the success message
-      const { data: cardData } = await supabase
+      // Get the card details first
+      const { data: cardData, error: cardError } = await supabase
         .from('user_cards')
         .select('mana_value')
         .eq('id', cardId)
         .single();
 
-      console.log('Card sold successfully:', result);
+      if (cardError) {
+        console.error('Error getting card details:', cardError);
+        throw cardError;
+      }
+
+      if (!cardData) {
+        throw new Error('Card not found');
+      }
+
+      // Delete the card using its ID
+      const { error: deleteError } = await supabase
+        .from('user_cards')
+        .delete()
+        .eq('id', cardId)
+        .eq('user_id', user.id);
+
+      if (deleteError) {
+        console.error('Error deleting card:', deleteError);
+        throw deleteError;
+      }
+
+      // Update user's mana
+      const { error: manaError } = await supabase
+        .from('user_mana')
+        .update({ 
+          mana: (userMana || 0) + cardData.mana_value,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (manaError) {
+        console.error('Error updating mana:', manaError);
+        throw manaError;
+      }
+
       return { 
         cardId, 
-        manaValue: cardData?.mana_value || 0, 
-        newManaValue: (userMana || 0) + (cardData?.mana_value || 0)
+        manaValue: cardData.mana_value, 
+        newManaValue: (userMana || 0) + cardData.mana_value
       };
     },
     onSuccess: (data) => {
