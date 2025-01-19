@@ -12,11 +12,11 @@ export const useSellCard = (userMana: number | undefined) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get the mana value before selling the card
+      // Get the mana value and card_id before selling the card
       const { data: cardData, error: cardError } = await supabase
         .from('user_cards')
-        .select('mana_value')
-        .eq('card_id', cardId)
+        .select('mana_value, card_id')
+        .eq('id', cardId)
         .eq('user_id', user.id)
         .single();
 
@@ -29,10 +29,10 @@ export const useSellCard = (userMana: number | undefined) => {
         throw new Error('Card not found or already sold');
       }
 
-      // Call the sell_card function with the card_id directly
+      // Call the sell_card function with the card_id from the user_cards record
       const { data: result, error: rpcError } = await supabase
         .rpc('sell_card', { 
-          p_card_id: cardId,
+          p_card_id: cardData.card_id,
           p_user_id: user.id
         });
 
