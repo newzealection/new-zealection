@@ -32,8 +32,7 @@ export const useSellCard = (userMana: number | undefined) => {
       const { error: deleteError } = await supabase
         .from('user_cards')
         .delete()
-        .eq('id', cardId)
-        .eq('user_id', user.id);
+        .eq('id', cardId);
 
       if (deleteError) {
         console.error('Error deleting card:', deleteError);
