@@ -30,7 +30,7 @@ export const CardGrid = ({ cards, onSellCard, getManaValue }: CardGridProps) => 
             description={userCard.cards.description}
             showFlip={true}
             manaValue={getManaValue(userCard)}
-            onSell={() => onSellCard(userCard.id)}
+            onSell={() => onSellCard(userCard.card_id)}
           />
         </div>
       ))}
