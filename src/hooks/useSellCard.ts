@@ -8,13 +8,18 @@ export const useSellCard = (userMana: number | undefined) => {
 
   return useMutation({
     mutationFn: async ({ cardId }: { cardId: string }) => {
-      console.log('Selling card:', { cardId });
+      console.log('Starting card sale process...');
+      console.log('Card ID to sell:', cardId);
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('No authenticated user found');
+        throw new Error('User not authenticated');
+      }
 
       console.log('Authenticated user:', user.id);
+      console.log('Calling sell_card function with:', { p_card_id: cardId, p_user_id: user.id });
 
-      // Call the sell_card database function
       const { data, error } = await supabase
         .rpc('sell_card', {
           p_card_id: cardId,
@@ -22,18 +27,19 @@ export const useSellCard = (userMana: number | undefined) => {
         });
 
       if (error) {
-        console.error('Error selling card:', error);
+        console.error('Error from sell_card function:', error);
         throw error;
       }
 
       if (!data) {
+        console.error('No data returned from sell_card function');
         throw new Error('Failed to sell card');
       }
 
+      console.log('Card sold successfully:', data);
       return { success: true };
     },
     onSuccess: () => {
-      // Invalidate both queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
       toast({
