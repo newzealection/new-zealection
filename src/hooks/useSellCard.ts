@@ -20,6 +20,21 @@ export const useSellCard = (userMana: number | undefined) => {
       console.log('Authenticated user:', user.id);
       console.log('Calling sell_card function with:', { p_card_id: cardId, p_user_id: user.id });
 
+      // First verify the card exists
+      const { data: cardData, error: cardError } = await supabase
+        .from('user_cards')
+        .select('*')
+        .eq('id', cardId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (cardError || !cardData) {
+        console.error('Card verification failed:', cardError || 'Card not found');
+        throw new Error('Card not found or does not belong to user');
+      }
+
+      console.log('Card verified:', cardData);
+
       const { data, error } = await supabase
         .rpc('sell_card', {
           p_card_id: cardId,
