@@ -12,28 +12,10 @@ export const useSellCard = (userMana: number | undefined) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // First verify the card exists and get its mana value
-      const { data: existingCard, error: checkError } = await supabase
-        .from('user_cards')
-        .select('mana_value')
-        .eq('id', cardId)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Error checking card:', checkError);
-        throw checkError;
-      }
-
-      if (!existingCard) {
-        throw new Error('Card not found or already sold');
-      }
-
-      console.log('Found card with mana value:', existingCard.mana_value);
-
-      // Then delete the card and update mana in a single transaction using RPC
+      // Call the sell_card function with card_id
       const { data: result, error: rpcError } = await supabase
         .rpc('sell_card', { 
-          p_user_card_id: cardId,
+          p_card_id: cardId,
           p_user_id: user.id
         });
 
@@ -42,11 +24,24 @@ export const useSellCard = (userMana: number | undefined) => {
         throw rpcError;
       }
 
+      // Get the mana value for the toast message
+      const { data: cardData, error: cardError } = await supabase
+        .from('user_cards')
+        .select('mana_value')
+        .eq('card_id', cardId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (cardError) {
+        console.error('Error getting card mana value:', cardError);
+        throw cardError;
+      }
+
       console.log('Card sold successfully:', result);
       return { 
         cardId, 
-        manaValue: existingCard.mana_value, 
-        newManaValue: (userMana || 0) + existingCard.mana_value 
+        manaValue: cardData.mana_value, 
+        newManaValue: (userMana || 0) + cardData.mana_value 
       };
     },
     onSuccess: (data) => {

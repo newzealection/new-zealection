@@ -196,7 +196,7 @@ export type Database = {
           }
       sell_card: {
         Args: {
-          p_user_card_id: string
+          p_card_id: string
           p_user_id: string
         }
         Returns: boolean
