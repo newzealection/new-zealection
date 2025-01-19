@@ -28,6 +28,8 @@ export const useSellCard = (userMana: number | undefined) => {
         throw new Error('Card not found or already sold');
       }
 
+      console.log('Found card with mana value:', existingCard.mana_value);
+
       // Then delete the card and update mana in a single transaction using RPC
       const { data: result, error: rpcError } = await supabase
         .rpc('sell_card', { 
