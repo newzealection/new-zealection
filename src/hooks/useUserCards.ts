@@ -18,11 +18,6 @@ export const useUserCards = () => {
         user = currentUser;
       } catch (error) {
         console.error('Error fetching user:', error);
-        toast({
-          title: "Authentication Error",
-          description: "Please try logging in again.",
-          variant: "destructive",
-        });
         throw new Error('User not authenticated');
       }
 
@@ -63,11 +58,6 @@ export const useUserCards = () => {
         return data;
       } catch (error) {
         console.error('Failed to fetch user cards:', error);
-        toast({
-          title: "Error Loading Cards",
-          description: "Unable to load your cards. Please try again later.",
-          variant: "destructive",
-        });
         throw error;
       }
     },
@@ -76,5 +66,12 @@ export const useUserCards = () => {
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    onError: () => {
+      toast({
+        title: "Error Loading Cards",
+        description: "Unable to load your cards. Please try again later.",
+        variant: "destructive",
+      });
+    }
   });
 };

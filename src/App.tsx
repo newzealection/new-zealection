@@ -90,6 +90,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
+        <Toaster />
         <QueryInvalidator />
         <Routes>
           <Route path="/" element={<Index />} />
@@ -102,7 +103,6 @@ function App() {
           <Route path="/battlefield" element={<AuthGuard><Battlefield /></AuthGuard>} />
           <Route path="/account" element={<AuthGuard><Account /></AuthGuard>} />
         </Routes>
-        <Toaster />
       </Router>
     </QueryClientProvider>
   );
