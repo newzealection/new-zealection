@@ -15,7 +15,6 @@ import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-// Create a client with more aggressive retry configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -30,19 +29,20 @@ const queryClient = new QueryClient({
   },
 });
 
-// Create a wrapper component to handle auth state changes
 const QueryInvalidator = () => {
   const { toast } = useToast();
 
   useEffect(() => {
     let isInitialSession = true;
+    let isFirstLoad = true;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed in QueryInvalidator:", event);
       
-      // Skip initial session check to prevent unnecessary toast
-      if (isInitialSession) {
+      // Skip initial session check and first load to prevent unnecessary toasts
+      if (isInitialSession || isFirstLoad) {
         isInitialSession = false;
+        isFirstLoad = false;
         return;
       }
       

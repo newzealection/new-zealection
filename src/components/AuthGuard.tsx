@@ -13,6 +13,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
   useEffect(() => {
     let mounted = true;
+    let isInitialCheck = true;
 
     const checkAuth = async () => {
       try {
@@ -24,7 +25,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
           throw error;
         }
 
-        if (!session && mounted) {
+        if (!session && mounted && !isInitialCheck) {
           console.log("AuthGuard: No session found, redirecting to login");
           toast({
             title: "Authentication required",
@@ -32,9 +33,10 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
           });
           navigate("/auth/login");
         }
+        isInitialCheck = false;
       } catch (error) {
         console.error("AuthGuard: Unexpected error:", error);
-        if (mounted) {
+        if (mounted && !isInitialCheck) {
           toast({
             variant: "destructive",
             title: "Authentication Error",
@@ -50,7 +52,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("AuthGuard: Auth state changed:", event);
       
-      if (event === "SIGNED_OUT" && mounted) {
+      if (event === "SIGNED_OUT" && mounted && !isInitialCheck) {
         console.log("AuthGuard: User signed out, redirecting to login");
         navigate("/auth/login");
       } else if (event === "TOKEN_REFRESHED") {
