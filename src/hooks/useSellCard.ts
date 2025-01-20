@@ -48,14 +48,17 @@ export const useSellCard = (userMana: number | undefined) => {
       }
 
       console.log('Card sold successfully:', data);
-      return { success: true };
+      return { success: true, manaValue: cardData.mana_value };
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
+      
+      const newTotalMana = (userMana || 0) + (data.manaValue || 0);
+      
       toast({
-        title: "Card sold successfully!",
-        description: "The card has been removed from your collection and you received mana.",
+        title: "Card sold successfully! 🎉",
+        description: `You received ${data.manaValue} mana. Your new total is ${newTotalMana} mana.`,
       });
     },
     onError: (error: Error) => {

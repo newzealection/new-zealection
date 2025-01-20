@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ManaDisplay } from './ManaDisplay';
 
 interface CollectibleCardProps {
   imageUrl: string;
@@ -54,13 +55,6 @@ export const CollectibleCard = ({
   const handleClick = () => {
     if (showFlip && description) {
       setIsFlipped(!isFlipped);
-    }
-  };
-
-  const handleSellClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onSell) {
-      setShowConfirmDialog(true);
     }
   };
 
@@ -109,17 +103,14 @@ export const CollectibleCard = ({
 
             {/* Mana Display */}
             {manaValue !== undefined && onSell && (
-              <button
-                onClick={handleSellClick}
-                className="absolute top-2 left-2 z-30 bg-black/20 backdrop-blur-sm hover:bg-black/30 text-white border-none flex items-center gap-2 transition-all duration-300 px-2 py-1 rounded"
-              >
-                <img 
-                  src="/lovable-uploads/75d6637e-1062-4fd8-b272-34dbb7e63acc.png" 
-                  alt="Mana" 
-                  className="w-5 h-5 object-contain"
-                />
-                {manaValue}
-              </button>
+              <ManaDisplay 
+                manaValue={manaValue} 
+                onSell={(e) => {
+                  e?.stopPropagation();
+                  setShowConfirmDialog(true);
+                }} 
+                cardTitle={title}
+              />
             )}
 
             <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/80 to-transparent z-20">
