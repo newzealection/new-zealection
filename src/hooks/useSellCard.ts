@@ -8,51 +8,57 @@ export const useSellCard = (userMana: number | undefined) => {
 
   return useMutation({
     mutationFn: async ({ cardId }: { cardId: string }) => {
-      console.log('Selling card:', { cardId });
+      console.log('Starting card sale process...');
+      console.log('Card ID to sell:', cardId);
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('No authenticated user found');
+        throw new Error('User not authenticated');
+      }
 
-      // First verify the card exists and get its mana value
-      const { data: existingCard, error: checkError } = await supabase
+      console.log('Authenticated user:', user.id);
+
+      // First verify the card exists
+      const { data: cardData, error: cardError } = await supabase
         .from('user_cards')
-        .select('mana_value')
+        .select('*')
         .eq('id', cardId)
-        .maybeSingle();
+        .eq('user_id', user.id)
+        .single();
 
-      if (checkError) {
-        console.error('Error checking card:', checkError);
-        throw checkError;
+      if (cardError || !cardData) {
+        console.error('Card verification failed:', cardError || 'Card not found');
+        throw new Error('Card not found or does not belong to user');
       }
 
-      if (!existingCard) {
-        throw new Error('Card not found or already sold');
-      }
+      console.log('Card verified:', cardData);
+      console.log('Calling sell_card function with:', { p_card_id: cardId, p_user_id: user.id });
 
-      // Then delete the card and update mana in a single transaction using RPC
-      const { data: result, error: rpcError } = await supabase
-        .rpc('sell_card', { 
+      // Call the sell_card function
+      const { data, error } = await supabase
+        .rpc('sell_card', {
           p_card_id: cardId,
           p_user_id: user.id
         });
 
-      if (rpcError) {
-        console.error('Error in sell_card transaction:', rpcError);
-        throw rpcError;
+      if (error) {
+        console.error('Error from sell_card function:', error);
+        throw error;
       }
 
-      console.log('Card sold successfully:', result);
-      return { 
-        cardId, 
-        manaValue: existingCard.mana_value, 
-        newManaValue: (userMana || 0) + existingCard.mana_value 
-      };
+      console.log('Card sold successfully:', data);
+      return { success: true, manaValue: cardData.mana_value };
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['userCards'] });
       queryClient.invalidateQueries({ queryKey: ['userMana'] });
+      
+      const newTotalMana = (userMana || 0) + (data.manaValue || 0);
+      
       toast({
-        title: "Card sold successfully!",
-        description: `You received ${data.manaValue} mana. New balance: ${data.newManaValue} mana.`,
+        title: "Card sold successfully! 🎉",
+        description: `You received ${data.manaValue} mana. Your new total is ${newTotalMana} mana.`,
       });
     },
     onError: (error: Error) => {
