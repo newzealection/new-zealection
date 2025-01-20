@@ -13,31 +13,73 @@ import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
-// Create a client
+// Create a client with more aggressive retry configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
   },
 });
 
 // Create a wrapper component to handle auth state changes
 const QueryInvalidator = () => {
+  const { toast } = useToast();
+
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed in QueryInvalidator:", event);
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-        console.log("Invalidating queries due to auth state change");
-        // Invalidate all queries when auth state changes
+      
+      if (event === 'SIGNED_IN') {
+        console.log("User signed in, invalidating queries");
+        queryClient.invalidateQueries();
+        toast({
+          title: "Welcome back!",
+          description: `Signed in as ${session?.user?.email}`,
+        });
+      } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out, invalidating queries");
+        queryClient.invalidateQueries();
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully.",
+        });
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed, invalidating queries");
         queryClient.invalidateQueries();
       }
     });
 
+    // Set up offline/online handlers
+    const handleOnline = () => {
+      console.log("App is online, refreshing data");
+      queryClient.invalidateQueries();
+      toast({
+        title: "Connected",
+        description: "Your internet connection has been restored.",
+      });
+    };
+
+    const handleOffline = () => {
+      console.log("App is offline");
+      toast({
+        title: "Connection Lost",
+        description: "Please check your internet connection.",
+        variant: "destructive",
+      });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
