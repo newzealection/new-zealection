@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 interface ManaDisplayProps {
   manaValue: number;
-  onSell: () => void;
+  onSell: (e?: React.MouseEvent) => void;
   cardTitle: string;
 }
 

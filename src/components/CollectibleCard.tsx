@@ -105,10 +105,7 @@ export const CollectibleCard = ({
             {manaValue !== undefined && onSell && (
               <ManaDisplay 
                 manaValue={manaValue} 
-                onSell={(e) => {
-                  e?.stopPropagation();
-                  setShowConfirmDialog(true);
-                }} 
+                onSell={() => setShowConfirmDialog(true)} 
                 cardTitle={title}
               />
             )}
