@@ -23,18 +23,9 @@ const queryClient = new QueryClient({
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       gcTime: 1000 * 60 * 5,
-      onError: (error, query) => {
-        if (query.meta?.errorMessage) {
-          queryClient.getLogger().error(error);
-          // Show toast with custom error message from meta
-          const toast = useToast();
-          toast.toast({
-            title: "Error",
-            description: query.meta.errorMessage as string,
-            variant: "destructive",
-          });
-        }
-      },
+      meta: {
+        errorMessage: "An error occurred. Please try again later."
+      }
     },
   },
 });
