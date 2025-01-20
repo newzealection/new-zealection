@@ -35,8 +35,16 @@ const QueryInvalidator = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    let isInitialSession = true;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed in QueryInvalidator:", event);
+      
+      // Skip initial session check to prevent unnecessary toast
+      if (isInitialSession) {
+        isInitialSession = false;
+        return;
+      }
       
       if (event === 'SIGNED_IN') {
         console.log("User signed in, invalidating queries");
