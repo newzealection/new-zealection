@@ -66,12 +66,9 @@ export const useUserCards = () => {
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    onError: () => {
-      toast({
-        title: "Error Loading Cards",
-        description: "Unable to load your cards. Please try again later.",
-        variant: "destructive",
-      });
-    }
+    meta: {
+      errorMessage: "Unable to load your cards. Please try again later."
+    },
+    gcTime: 1000 * 60 * 5
   });
 };
