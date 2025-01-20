@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export const useUserCards = () => {
   const { toast } = useToast();
@@ -56,11 +56,6 @@ export const useUserCards = () => {
         
         if (error) {
           console.error('Error fetching user cards:', error);
-          toast({
-            title: "Error Loading Cards",
-            description: "There was a problem loading your cards. Please refresh the page.",
-            variant: "destructive",
-          });
           throw error;
         }
         
@@ -69,17 +64,17 @@ export const useUserCards = () => {
       } catch (error) {
         console.error('Failed to fetch user cards:', error);
         toast({
-          title: "Connection Error",
-          description: "Unable to load your cards. Please check your internet connection and try again.",
+          title: "Error Loading Cards",
+          description: "Unable to load your cards. Please try again later.",
           variant: "destructive",
         });
         throw error;
       }
     },
-    retry: 3, // Retry failed requests 3 times
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    refetchOnWindowFocus: true, // Refresh data when tab becomes active
-    refetchOnReconnect: true, // Refresh data when internet connection is restored
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 };

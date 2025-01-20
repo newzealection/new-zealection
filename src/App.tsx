@@ -13,7 +13,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 // Create a client with more aggressive retry configuration
 const queryClient = new QueryClient({
@@ -89,8 +89,8 @@ const QueryInvalidator = () => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <QueryInvalidator />
       <Router>
+        <QueryInvalidator />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth/login" element={<Login />} />
