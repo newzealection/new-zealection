@@ -18,22 +18,28 @@ export const CardGrid = ({ cards, onSellCard, getManaValue }: CardGridProps) => 
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-      {cards.map((userCard) => (
-        <div key={userCard.unique_card_id}>
-          <CollectibleCard
-            imageUrl={userCard.cards.image_url}
-            title={userCard.cards.title}
-            location={userCard.cards.location}
-            rarity={userCard.cards.rarity}
-            collectedAt={format(new Date(userCard.collected_at), 'PPP')}
-            uniqueCardId={userCard.unique_card_id}
-            description={userCard.cards.description}
-            showFlip={true}
-            manaValue={getManaValue(userCard)}
-            onSell={() => onSellCard(userCard.id)}
-          />
-        </div>
-      ))}
+      {cards.map((userCard) => {
+        console.log('Rendering card:', userCard);
+        return (
+          <div key={userCard.unique_card_id}>
+            <CollectibleCard
+              imageUrl={userCard.cards.image_url}
+              title={userCard.cards.title}
+              location={userCard.cards.location}
+              rarity={userCard.cards.rarity}
+              collectedAt={format(new Date(userCard.collected_at), 'PPP')}
+              uniqueCardId={userCard.unique_card_id}
+              description={userCard.cards.description}
+              showFlip={true}
+              manaValue={getManaValue(userCard)}
+              onSell={() => {
+                console.log('Selling card with ID:', userCard.id);
+                onSellCard(userCard.id);
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };
