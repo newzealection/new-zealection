@@ -8,12 +8,31 @@ import { useQuery } from '@tanstack/react-query';
 import { CollectibleCard } from '@/components/CollectibleCard';
 import { format, differenceInHours } from 'date-fns';
 import type { User } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
+
+type CardRarity = Database['public']['Enums']['card_rarity'];
 
 const Cards = () => {
   const { toast } = useToast();
   const [isRolling, setIsRolling] = useState(false);
   const [countdown, setCountdown] = useState('Roll Now!');
   const [user, setUser] = useState<User | null>(null);
+
+  // Helper function to map card rarity to mana value
+  const getManaValueFromRarity = (rarity: CardRarity): number => {
+    switch (rarity) {
+      case 'legendary':
+        return 500;
+      case 'epic':
+        return 400;
+      case 'rare':
+        return 300;
+      case 'common':
+        return 100;
+      default:
+        return 100;
+    }
+  };
 
   // Set up authentication state
   useEffect(() => {
@@ -120,11 +139,25 @@ const Cards = () => {
       
       const randomCard = cards[Math.floor(Math.random() * cards.length)];
       
+      // Generate unique card ID using the database function
+      const { data: uniqueCardId, error: uniqueIdError } = await supabase
+        .rpc('generate_unique_card_id', { 
+          card_code: randomCard.card_code,
+          season: randomCard.season 
+        });
+      
+      if (uniqueIdError) throw uniqueIdError;
+      
+      // Calculate mana value based on rarity
+      const manaValue = getManaValueFromRarity(randomCard.rarity);
+      
       const { error: insertError } = await supabase
         .from('user_cards')
         .insert({
           card_id: randomCard.id,
           user_id: user.id,
+          unique_card_id: uniqueCardId,
+          mana_value: manaValue,
         });
       
       if (insertError) throw insertError;
