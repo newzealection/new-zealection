@@ -7,17 +7,38 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { CollectibleCard } from '@/components/CollectibleCard';
 import { format, differenceInHours } from 'date-fns';
+import type { User } from '@supabase/supabase-js';
 
 const Cards = () => {
   const { toast } = useToast();
   const [isRolling, setIsRolling] = useState(false);
   const [countdown, setCountdown] = useState('Roll Now!');
+  const [user, setUser] = useState<User | null>(null);
 
-  // Query user's last roll time
-  const { data: lastRoll, refetch: refetchLastRoll } = useQuery({
-    queryKey: ['lastRoll'],
-    queryFn: async () => {
+  // Set up authentication state
+  useEffect(() => {
+    // Get initial user
+    const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    
+    getUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Query user's last roll time - only when user is authenticated
+  const { data: lastRoll, refetch: refetchLastRoll } = useQuery({
+    queryKey: ['lastRoll', user?.id],
+    queryFn: async () => {
       if (!user) throw new Error('No user found');
 
       const { data: userCards, error } = await supabase
@@ -30,6 +51,7 @@ const Cards = () => {
       if (error) throw error;
       return userCards?.[0]?.last_roll_at;
     },
+    enabled: !!user, // Only run query when user is authenticated
   });
 
   const { data: recentCards } = useQuery({
@@ -52,7 +74,7 @@ const Cards = () => {
   });
 
   // Calculate if user can roll based on last roll time
-  const canRoll = !lastRoll || differenceInHours(new Date(), new Date(lastRoll)) >= 24;
+  const canRoll = user && (!lastRoll || differenceInHours(new Date(), new Date(lastRoll)) >= 24);
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -86,8 +108,9 @@ const Cards = () => {
     try {
       setIsRolling(true);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       
       const { data: cards, error: cardsError } = await supabase
         .from('cards')
@@ -141,14 +164,18 @@ const Cards = () => {
             You can roll once every 24 hours.
           </p>
           
-          <Button
-            size="lg"
-            className="bg-nzgreen-500 hover:bg-nzgreen-600 text-white px-8 py-4 rounded-lg text-lg"
-            onClick={handleRoll}
-            disabled={!canRoll || isRolling}
-          >
-            {isRolling ? "Rolling..." : countdown}
-          </Button>
+          {!user ? (
+            <p className="text-gray-500 mb-8">Please log in to roll cards.</p>
+          ) : (
+            <Button
+              size="lg"
+              className="bg-nzgreen-500 hover:bg-nzgreen-600 text-white px-8 py-4 rounded-lg text-lg"
+              onClick={handleRoll}
+              disabled={!canRoll || isRolling}
+            >
+              {isRolling ? "Rolling..." : countdown}
+            </Button>
+          )}
 
           <div className="mt-16">
             <h2 className="text-2xl font-semibold text-gray-900 mb-8">Recently Collected Cards</h2>
