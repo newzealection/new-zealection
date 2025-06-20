@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { AuthGuard } from '@/components/AuthGuard';
@@ -8,14 +8,31 @@ import { useSellCard } from '@/hooks/useSellCard';
 import { FilterControls } from '@/components/collection/FilterControls';
 import { CardGrid } from '@/components/collection/CardGrid';
 import { CollectionHeader } from '@/components/collection/CollectionHeader';
+import { supabase } from '@/integrations/supabase/client';
 
 const Collection = () => {
   const [sortBy, setSortBy] = useState<'rarity' | 'location' | 'collected'>('rarity');
   const [filterRarity, setFilterRarity] = useState<string>('all');
   const [filterLocation, setFilterLocation] = useState<string>('all');
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const { data: userMana } = useUserMana();
-  const { data: userCards, isLoading } = useUserCards();
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserId(user.id);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const { data: userMana } = useUserMana(userId);
+  const { data: userCards, isLoading } = useUserCards(userId);
   const sellCardMutation = useSellCard(userMana);
 
   const handleSellCard = (cardId: string) => {

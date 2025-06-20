@@ -2,33 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export const useUserCards = () => {
+export const useUserCards = (userId: string | null) => {
   const { toast } = useToast();
 
   return useQuery({
-    queryKey: ['userCards'],
+    queryKey: ['userCards', userId],
     queryFn: async () => {
-      console.log('Fetching user cards...');
-      
-      // Get current user with retry logic
-      let user;
-      try {
-        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
-        user = currentUser;
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        throw new Error('User not authenticated');
+      if (!userId) {
+        throw new Error('User ID not provided');
       }
 
-      if (!user) {
-        console.log('No user found, throwing error');
-        throw new Error('User not authenticated');
-      }
-
-      console.log('Fetching cards for user:', user.id);
+      console.log('Fetching cards for user:', userId);
       
-      // Fetch user cards with retry logic
       try {
         const { data, error } = await supabase
           .from('user_cards')
@@ -47,7 +32,7 @@ export const useUserCards = () => {
               description
             )
           `)
-          .eq('user_id', user.id);
+          .eq('user_id', userId);
         
         if (error) {
           console.error('Error fetching user cards:', error);
@@ -61,6 +46,7 @@ export const useUserCards = () => {
         throw error;
       }
     },
+    enabled: !!userId,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 1000 * 60 * 5,

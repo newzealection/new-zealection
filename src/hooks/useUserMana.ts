@@ -1,22 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useUserMana = () => {
+export const useUserMana = (userId: string | null) => {
   return useQuery({
-    queryKey: ['userMana'],
+    queryKey: ['userMana', userId],
     queryFn: async () => {
-      console.log('Fetching user mana...');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('No user found');
-        throw new Error('User not authenticated');
+      if (!userId) {
+        throw new Error('User ID not provided');
       }
 
-      console.log('Fetching mana for user:', user.id);
+      console.log('Fetching mana for user:', userId);
       const { data: manaData, error: manaError } = await supabase
         .from('user_mana')
         .select('mana')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .maybeSingle();
       
       if (manaError) {
@@ -29,7 +26,7 @@ export const useUserMana = () => {
         const { data: newManaData, error: createError } = await supabase
           .from('user_mana')
           .insert([{ 
-            user_id: user.id, 
+            user_id: userId, 
             mana: 0 
           }])
           .select('mana')
@@ -47,7 +44,7 @@ export const useUserMana = () => {
       console.log('Existing mana record found:', manaData);
       return manaData?.mana || 0;
     },
-    enabled: true, // Query will run as soon as component mounts
+    enabled: !!userId,
     retry: 1,
   });
 };
