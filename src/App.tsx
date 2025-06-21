@@ -11,7 +11,7 @@ import Callback from "./pages/auth/Callback";
 import { AuthGuard } from "./components/AuthGuard";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -99,6 +99,39 @@ const QueryInvalidator = () => {
 };
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Initialize the app
+    const initializeApp = async () => {
+      try {
+        // Check if we have a valid session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error checking session:", error);
+        }
+        console.log("Initial session check:", session ? "authenticated" : "not authenticated");
+      } catch (error) {
+        console.error("Error initializing app:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeApp();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-nzgreen-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -114,6 +147,8 @@ function App() {
           <Route path="/marketplace" element={<AuthGuard><Marketplace /></AuthGuard>} />
           <Route path="/battlefield" element={<AuthGuard><Battlefield /></AuthGuard>} />
           <Route path="/account" element={<AuthGuard><Account /></AuthGuard>} />
+          {/* Catch all route - redirect to home */}
+          <Route path="*" element={<Index />} />
         </Routes>
       </Router>
     </QueryClientProvider>
