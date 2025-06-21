@@ -99,6 +99,7 @@ const QueryInvalidator = () => {
 };
 
 function App() {
+  console.log('App component loaded');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
