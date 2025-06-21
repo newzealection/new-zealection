@@ -33,5 +33,4 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  base: './',
 }));
