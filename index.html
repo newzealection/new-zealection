@@ -7,6 +7,13 @@
     <title>New Zealection</title>
     <meta name="description" content="Collect the Beauty of Aotearoa" />
     <meta name="author" content="ThinhLam" />
+    <script>
+      // Prevent blank page on deployment by ensuring proper routing
+      if (window.location.pathname !== '/' && !window.location.pathname.includes('.')) {
+        console.log('Redirecting from', window.location.pathname, 'to home');
+        window.history.replaceState({}, '', '/');
+      }
+    </script>
   </head>
 
   <body>

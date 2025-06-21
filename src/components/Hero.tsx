@@ -1,8 +1,38 @@
 import { motion } from 'framer-motion';
 import { CollectibleCard } from './CollectibleCard';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Hero = () => {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check initial auth state
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleStartCollection = () => {
+    if (isAuthenticated) {
+      navigate('/cards');
+    } else {
+      navigate('/auth/login');
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-stone-50">
       <div className="absolute inset-0 z-0">
@@ -31,15 +61,14 @@ export const Hero = () => {
             Experience New Zealand's breathtaking landscapes through our unique collectible cards.
             Each card is a gateway to adventure.
           </p>
-          <Link to="/cards">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-nzgreen-500 text-white rounded-lg font-medium shadow-lg hover:bg-nzgreen-600 transition-colors"
-            >
-              Start Your Collection
-            </motion.button>
-          </Link>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleStartCollection}
+            className="px-6 sm:px-8 py-3 sm:py-4 bg-nzgreen-500 text-white rounded-lg font-medium shadow-lg hover:bg-nzgreen-600 transition-colors"
+          >
+            Start Your Collection
+          </motion.button>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-12 px-4">
