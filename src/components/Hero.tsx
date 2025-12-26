@@ -67,7 +67,7 @@ export const Hero = () => {
             onClick={handleStartCollection}
             className="px-6 sm:px-8 py-3 sm:py-4 bg-nzgreen-500 text-white rounded-lg font-medium shadow-lg hover:bg-nzgreen-600 transition-colors"
           >
-            Explore
+            Start Your Journey
           </motion.button>
         </motion.div>
 
