@@ -4,15 +4,13 @@ import { Navbar } from "@/components/Navbar";
 const Marketplace = () => {
   return (
     <div className="min-h-screen relative">
-      <div 
+      <div
         className="absolute inset-0"
         style={{
-          backgroundImage: 'url(https://i.imghippo.com/files/puJ1712SQ.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          background: 'linear-gradient(to bottom, #f5f5f4, #e7e5e4)',
         }}
       />
-      
+
       {/* Content */}
       <div className="relative z-10">
         <Navbar />
