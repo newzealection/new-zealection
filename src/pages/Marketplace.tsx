@@ -7,7 +7,9 @@ const Marketplace = () => {
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(to bottom, #f5f5f4, #e7e5e4)',
+          backgroundImage: 'url(/marketplace-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       />
 

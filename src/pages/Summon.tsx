@@ -7,7 +7,9 @@ const Summon = () => {
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(to bottom, #f5f5f4, #e7e5e4)',
+          backgroundImage: 'url(/summon-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       />
 
