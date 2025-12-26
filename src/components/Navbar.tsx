@@ -14,16 +14,16 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="https://i.imghippo.com/files/vrF1570ATw.png" 
-              alt="New Zealection Logo" 
+            <img
+              src="/placeholder.svg"
+              alt="New Zealection Logo"
               className="h-12 w-12 object-contain"
             />
             <span className="text-2xl sm:text-3xl font-semibold tracking-tight text-nzgreen-600 hover:text-nzgreen-500 transition-colors duration-200">
               New Zealection
             </span>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <Link
@@ -33,7 +33,7 @@ export const Navbar = () => {
               <Home className="w-4 h-4" />
               <span>Home</span>
             </Link>
-            
+
             <Link
               to="/cards"
               className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
@@ -49,7 +49,7 @@ export const Navbar = () => {
               <Zap className="w-4 h-4" />
               <span>Summon</span>
             </Link>
-            
+
             <Link
               to="/collection"
               className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
@@ -73,7 +73,7 @@ export const Navbar = () => {
               <Flag className="w-4 h-4" />
               <span>Battlefield</span>
             </Link>
-            
+
             <Link
               to="/account"
               className="flex items-center space-x-1.5 px-3 py-2 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
@@ -103,7 +103,7 @@ export const Navbar = () => {
               <Home className="w-4 h-4" />
               <span>Home</span>
             </Link>
-            
+
             <Link
               to="/cards"
               className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
@@ -121,7 +121,7 @@ export const Navbar = () => {
               <Zap className="w-4 h-4" />
               <span>Summon</span>
             </Link>
-            
+
             <Link
               to="/collection"
               className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
@@ -148,7 +148,7 @@ export const Navbar = () => {
               <Flag className="w-4 h-4" />
               <span>Battlefield</span>
             </Link>
-            
+
             <Link
               to="/account"
               className="flex items-center space-x-2 px-3 py-2.5 rounded-md text-stone-600 hover:text-nzgreen-500 font-medium tracking-wide transition-all duration-200 hover:bg-nzgreen-50"
